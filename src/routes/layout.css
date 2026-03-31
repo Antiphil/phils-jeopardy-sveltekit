@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+:root {
+	--bg: #1a0d2e;
+	--bg-card: #261040;
+	--bg-card-2: #32155a;
+	--purple-light: #c084fc;
+	--purple-mid: #a855f7;
+	--purple-bright: #d946ef;
+	--accent-yellow: #fbbf24;
+	--accent-green: #34d399;
+	--text: #f3e8ff;
+	--text-muted: #a78bca;
+	--border: #5b21b6;
+}
+
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--bg);
+	color: var(--text);
+	font-family: 'Nunito', sans-serif;
+	min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple-mid); }
+
+/* Utility classes for the design system */
+.font-game {
+	font-family: 'Fredoka One', cursive;
+}
+
+.btn-primary {
+	background: linear-gradient(135deg, var(--purple-mid), var(--purple-bright));
+	color: white;
+	font-family: 'Fredoka One', cursive;
+	font-size: 1.1rem;
+	padding: 0.6rem 1.6rem;
+	border-radius: 999px;
+	border: none;
+	cursor: pointer;
+	box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+	transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+	transform: translateY(-2px) scale(1.03);
+	box-shadow: 0 6px 20px rgba(217, 70, 239, 0.5);
+}
+.btn-primary:active {
+	transform: translateY(0) scale(0.98);
+}
+
+.card {
+	background: var(--bg-card);
+	border: 1.5px solid var(--border);
+	border-radius: 1.25rem;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}

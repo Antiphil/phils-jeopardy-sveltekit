@@ -1,0 +1,32 @@
+import { pgTable, text, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+	id: text('id').primaryKey(),
+	name: text('name'),
+	email: text('email'),
+	image: text('image'),
+	isAdmin: boolean('is_admin').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const savedGames = pgTable('saved_games', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+	name: text('name').notNull().default('Neues Spiel'),
+	board1: jsonb('board1').notNull(),
+	board2: jsonb('board2').notNull(),
+	chaosCategory: jsonb('chaos_category').notNull(),
+	chaosEnabled: boolean('chaos_enabled').notNull().default(false),
+	isPublic: boolean('is_public').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const gameSessions = pgTable('game_sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+	savedGameId: text('saved_game_id').references(() => savedGames.id, { onDelete: 'set null' }),
+	state: jsonb('state').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
