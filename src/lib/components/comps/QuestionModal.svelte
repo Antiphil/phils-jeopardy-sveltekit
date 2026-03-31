@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Question } from '$lib/stores/game';
 	import { playCorrect, playWrong } from '$lib/sounds';
+	import { t } from '$lib/i18n';
 
 	let { question, answerer, onclose, onaward }: {
 		question: Question;
@@ -30,13 +31,13 @@
 <div class="backdrop" role="button" tabindex="-1" onmousedown={handleBackdrop} onkeydown={() => {}}>
 	<div class="modal" role="dialog" aria-modal="true">
 
-		<div class="points-badge">{question.points > 0 ? `${question.points} Punkte` : '🎲 Chaos Category'}</div>
+		<div class="points-badge">{question.points > 0 ? `${question.points} ${$t.questionModal.points}` : '🎲 Chaos Category'}</div>
 
 		{#if answerer}
 			<div class="answerer-row">
 				<span class="answerer-avatar">{answerer.avatar}</span>
 				<span class="answerer-name" style={`color: ${answerer.color}`}>{answerer.name}</span>
-				<span class="answerer-label">beantwortet</span>
+				<span class="answerer-label">{$t.questionModal.answering}</span>
 			</div>
 		{/if}
 
@@ -54,27 +55,27 @@
 
 		{#if answerRevealed}
 			<div class="answer-box">
-				<div class="answer-label">Antwort</div>
+				<div class="answer-label">{$t.questionModal.answer}</div>
 				<div class="answer-text">{question.answer}</div>
 			</div>
 			<button class="btn-reveal" onclick={() => onaward(question.points)}>
-				Weiter
+				{$t.questionModal.next}
 			</button>
 		{:else}
 			<div class="award-row">
-				<span class="award-label">Richtig oder falsch?</span>
+				<span class="award-label">{$t.questionModal.correctOrWrong}</span>
 				<div class="award-btns">
 					<button class="btn-award correct" onclick={() => handleAward(question.points)}>
-						✓ Richtig
+						{$t.questionModal.correct}
 					</button>
 					<button class="btn-award wrong" onclick={() => handleAward(0)}>
-						✗ Falsch
+						{$t.questionModal.wrong}
 					</button>
 				</div>
 			</div>
 		{/if}
 
-		<button class="close-btn" onclick={onclose} aria-label="Schließen">✕</button>
+		<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
 	</div>
 </div>
 

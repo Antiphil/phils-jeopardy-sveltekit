@@ -22,6 +22,19 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 			if (!token.sub) return token;
 
 			if (account) {
+				// If a user with this email already exists, reuse their ID
+				// This ensures the same person always gets the same account regardless of AUTH_SECRET rotation
+				if (token.email) {
+					const [existing] = await db
+						.select({ id: users.id })
+						.from(users)
+						.where(eq(users.email, token.email))
+						.limit(1);
+					if (existing) {
+						token.sub = existing.id;
+					}
+				}
+
 				// Upsert user on sign-in
 				await db
 					.insert(users)

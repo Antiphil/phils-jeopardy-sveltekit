@@ -1,0 +1,6 @@
+- i18n
+- scoreboard toggle
+- how to play besser ausarbeiten und auch die erklärung das ein gamemaster benannt werden muss das dieser die option hat sich die lösungen anzuzeigen
+- none gamemaster mode wo alle spieler teilnehmen können 
+    - auch ein online mode wo spieler übers internet miteinander spielen können
+- game libary user generated

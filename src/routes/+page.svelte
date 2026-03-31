@@ -8,7 +8,8 @@
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
-	import logo from '$lib/assets/logo.png'
+	import logo from '$lib/assets/logo.png';
+	import { t } from '$lib/i18n';
 
 	let { data }: { data: PageData } = $props();
 
@@ -101,23 +102,23 @@
 				<div class="resume-card">
 					<div class="resume-header">
 						<span class="resume-icon">⏸️</span>
-						<span class="resume-title">Laufendes Spiel</span>
+						<span class="resume-title">{$t.home.runningGame}</span>
 					</div>
 					<div class="resume-info">
 						<span class="resume-players">{summary.names.join(' · ')}</span>
 						<span class="resume-progress"
-							>Runde {summary.board} · {summary.answeredCount}/{summary.totalCount}
-							Fragen gespielt</span
+							>{$t.home.round} {summary.board} · {summary.answeredCount}/{summary.totalCount}
+							{$t.home.questionsPlayed}</span
 						>
 						{#if summary.topScorer}
 							<span class="resume-leader"
-								>Führend: {summary.topScorer.name} ({summary.topScorer.pts} Pkt.)</span
+								>{$t.home.leading} {summary.topScorer.name} ({summary.topScorer.pts} Pkt.)</span
 							>
 						{/if}
 					</div>
 					<div class="resume-actions">
-						<button class="btn-resume" onclick={() => resumeSession(session)}>▶ Weiterspielen</button>
-						<button class="btn-discard" onclick={() => discardSession(session.id)}>✕ Verwerfen</button>
+						<button class="btn-resume" onclick={() => resumeSession(session)}>{$t.home.resume}</button>
+						<button class="btn-discard" onclick={() => discardSession(session.id)}>{$t.home.discard}</button>
 					</div>
 				</div>
 			{/each}
@@ -125,13 +126,13 @@
 
 		{#if maxSessionsError}
 			<div class="sessions-error">
-				Du hast bereits 2 aktive Sessions. Bitte beende zuerst eine.
+				{$t.home.maxSessions}
 			</div>
 		{/if}
 
 		<div class="hero-actions">
-			<button class="btn-primary" onclick={() => (step = 'players')}>▶ Neues Spiel</button>
-			<a class="btn-outline" href="/how-to-play">⚙ How to Play</a>
+			<button class="btn-primary" onclick={() => (step = 'players')}>{$t.home.newGame}</button>
+			<a class="btn-outline" href="/how-to-play">{$t.home.howToPlay}</a>
 		</div>
 	</div>
 </div>
@@ -144,7 +145,26 @@
 	width: 100%;
 	padding: clamp(1rem, 3vw, 3rem);
 	box-sizing: border-box;
-	
+	position: relative; /* wichtig für das ::before */
+	}
+
+	.logo-wrapper::before {
+	content: '';
+	position: absolute;
+	width: calc(30% + 48px);
+	height: calc(82% + 32px);
+	transform: translate(-50%, -50%);
+	border-radius: 999px;
+	background: radial-gradient(
+		ellipse,
+		rgba(216, 100, 255, 0.9) 0%,
+		rgba(217, 70, 239, 0.55) 40%,
+		transparent 72%
+	);
+	filter: blur(18px);
+	animation: glowPulse 2.8s ease-in-out infinite;
+	pointer-events: none;
+	z-index: -1;
 	}
 
 	.logo-wrapper img {
@@ -156,31 +176,15 @@
 	transform-origin: center;
 	position: relative;
 	}
-		.logo-wrapper img::before {
-		content: '';
-		position: absolute;
-		inset: -16px -24px;
-		border-radius: 999px;
-		background: radial-gradient(ellipse, rgba(216, 100, 255, 0.9) 0%, rgba(217, 70, 239, 0.55) 40%, transparent 72%);
-		filter: blur(18px);
-		animation: glowPulse 2.8s ease-in-out infinite;
-		pointer-events: none;
-		z-index: -1;
-	}
 
 	@keyframes logoPulse {
-	0%,
-	100% {
-		transform: scale(1);
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.04); }
 	}
 
-	50% {
-		transform: scale(1.04);
-	}
-	}
 	@keyframes glowPulse {
-		0%, 100% { opacity: 0.5; transform: scale(0.9); }
-		50%       { opacity: 1;   transform: scale(1.15); }
+	0%, 100% { opacity: 0.5; transform: scale(0.9); }
+	50% { opacity: 1; transform: scale(1.15); }
 	}
 	.home {
 		min-height: calc(100vh - 70px);

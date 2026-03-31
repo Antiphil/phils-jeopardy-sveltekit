@@ -2,6 +2,7 @@
 	import { gameStore } from '$lib/stores/game';
 	import { goto } from '$app/navigation';
 	import { playWinnerFanfare } from '$lib/sounds';
+	import { t } from '$lib/i18n';
 
 	let gs = $derived($gameStore);
 
@@ -109,7 +110,7 @@
 	);
 
 	const MEDALS = ['🥇', '🥈', '🥉'];
-	const PLACE_LABELS = ['1. Platz', '2. Platz', '3. Platz'];
+	let PLACE_LABELS = $derived($t.winner.placeLabels);
 
 	// ── Konfetti-Einstellungen ────────────────────────────
 	const CONFETTI_COUNT = 200; // Anzahl der Konfetti-Stücke
@@ -152,11 +153,11 @@
 <div class="winner-page">
 	<div class="hero">
 		<div class="trophy">🏆</div>
-		<h1 class="hero-title">Spielende!</h1>
+		<h1 class="hero-title">{$t.winner.gameOver}</h1>
 		{#if ranked[0]}
 			<p class="hero-sub">
 				<span style={`color: ${ranked[0].color}`}>{ranked[0].avatar} {ranked[0].name}</span>
-				gewinnt mit <strong>{ranked[0].score} Punkten</strong>!
+				{$t.winner.winsWith} <strong>{ranked[0].score} {$t.winner.points}</strong>!
 			</p>
 		{/if}
 	</div>
@@ -168,7 +169,7 @@
 				<div class="podium-medal">{MEDALS[i] ?? '🎖️'}</div>
 				<div class="podium-avatar">{scorer.avatar}</div>
 				<div class="podium-name" style={`color: ${scorer.color}`}>{scorer.name}</div>
-				<div class="podium-score">{scorer.score} Pkt.</div>
+				<div class="podium-score">{scorer.score} {$t.winner.pts}</div>
 				<div class="podium-detail">
 					<span class="pd-correct">✓ {scorer.correct}</span>
 					<span class="pd-wrong">✗ {scorer.wrong}</span>
@@ -195,25 +196,25 @@
 	{/if}
 
 	<!-- Stats grid -->
-	<h2 class="section-title">📊 Spielstatistiken</h2>
+	<h2 class="section-title">{$t.winner.stats}</h2>
 	<div class="stats-grid">
 		<div class="stat-card">
 			<div class="stat-icon">❓</div>
 			<div class="stat-value">{totalAnswered} / {totalQuestions}</div>
-			<div class="stat-label">Fragen beantwortet</div>
+			<div class="stat-label">{$t.winner.questionsAnswered}</div>
 		</div>
 
 		<div class="stat-card">
 			<div class="stat-icon">💨</div>
 			<div class="stat-value">{totalSkipped}</div>
-			<div class="stat-label">Fragen übersprungen</div>
+			<div class="stat-label">{$t.winner.questionsSkipped}</div>
 		</div>
 
 		{#if mostCorrect && mostCorrect.correct > 0}
 			<div class="stat-card highlight-green">
 				<div class="stat-icon">{mostCorrect.avatar}</div>
 				<div class="stat-value" style={`color: ${mostCorrect.color}`}>{mostCorrect.name}</div>
-				<div class="stat-label">Meiste richtige Antworten ({mostCorrect.correct}✓)</div>
+				<div class="stat-label">{$t.winner.mostCorrect} ({mostCorrect.correct}✓)</div>
 			</div>
 		{/if}
 
@@ -221,7 +222,7 @@
 			<div class="stat-card highlight-red">
 				<div class="stat-icon">{mostWrong.avatar}</div>
 				<div class="stat-value" style={`color: ${mostWrong.color}`}>{mostWrong.name}</div>
-				<div class="stat-label">Meiste Fehlversuche ({mostWrong.wrong}✗)</div>
+				<div class="stat-label">{$t.winner.mostWrong} ({mostWrong.wrong}✗)</div>
 			</div>
 		{/if}
 
@@ -231,7 +232,7 @@
 				<div class="stat-value" style={`color: ${biggestSingleWin.color}`}>
 					{biggestSingleWin.name}
 				</div>
-				<div class="stat-label">Größter Einzelgewinn ({biggestSingleWin.biggestWin} Pkt.)</div>
+				<div class="stat-label">{$t.winner.biggestWin} ({biggestSingleWin.biggestWin} {$t.winner.pts})</div>
 			</div>
 		{/if}
 
@@ -239,24 +240,24 @@
 			<div class="stat-card highlight-red">
 				<div class="stat-icon">💸</div>
 				<div class="stat-value" style={`color: ${mostReckless.color}`}>{mostReckless.name}</div>
-				<div class="stat-label">Meiste Punkte verloren ({mostReckless.pointsLost} Pkt.)</div>
+				<div class="stat-label">{$t.winner.mostLost} ({mostReckless.pointsLost} {$t.winner.pts})</div>
 			</div>
 		{/if}
 	</div>
 
 	<!-- Per-player detail table -->
-	<h2 class="section-title">🎯 Spieler-Details</h2>
+	<h2 class="section-title">{$t.winner.playerDetails}</h2>
 	<div class="detail-table-wrap">
 		<table class="detail-table">
 			<thead>
 				<tr>
-					<th>Spieler</th>
-					<th>Punkte</th>
-					<th>✓ Richtig</th>
-					<th>✗ Falsch</th>
-					<th>Verloren</th>
-					<th>Bester Treffer</th>
-					<th>Teuerster Fehler</th>
+					<th>{$t.winner.tablePlayer}</th>
+					<th>{$t.winner.tablePoints}</th>
+					<th>{$t.winner.tableCorrect}</th>
+					<th>{$t.winner.tableWrong}</th>
+					<th>{$t.winner.tableLost}</th>
+					<th>{$t.winner.tableBest}</th>
+					<th>{$t.winner.tableMiss}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -271,8 +272,8 @@
 						<td class="td-correct">{s.correct}</td>
 						<td class="td-wrong">{s.wrong}</td>
 						<td class="td-lost">{s.pointsLost > 0 ? `-${s.pointsLost}` : '–'}</td>
-						<td class="td-best">{s.biggestWin > 0 ? `${s.biggestWin} Pkt.` : '–'}</td>
-						<td class="td-miss">{s.highestMiss > 0 ? `${s.highestMiss} Pkt.` : '–'}</td>
+						<td class="td-best">{s.biggestWin > 0 ? `${s.biggestWin} ${$t.winner.pts}` : '–'}</td>
+						<td class="td-miss">{s.highestMiss > 0 ? `${s.highestMiss} ${$t.winner.pts}` : '–'}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -287,7 +288,7 @@
 				goto('/');
 			}}
 		>
-			🏠 Zurück zur Startseite
+			{$t.winner.backHome}
 		</button>
 	</div>
 </div>

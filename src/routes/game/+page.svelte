@@ -4,6 +4,7 @@
 	import QuestionModal from '$lib/components/comps/QuestionModal.svelte';
 	import Scoreboard from '$lib/components/comps/Scoreboard.svelte';
 	import { goto } from '$app/navigation';
+	import { t } from '$lib/i18n';
 
 	let gs = $derived($gameStore);
 
@@ -170,7 +171,7 @@
 	<div
 		style="display:flex;align-items:center;justify-content:center;height:80vh;color:#a78bca;font-family:'Fredoka One',cursive;font-size:1.5rem"
 	>
-		Weiterleitung…
+		{$t.game.redirecting}
 	</div>
 {:else}
 	<!-- Question modal -->
@@ -187,13 +188,13 @@
 	{#if showSkipAnswer && retryQuestion}
 		<div class="backdrop" role="button" tabindex="-1" onmousedown={() => {}} onkeydown={() => {}}>
 			<div class="scorer-modal" role="dialog" aria-modal="true">
-				<h3 class="scorer-title">Niemand wusste es</h3>
+				<h3 class="scorer-title">{$t.game.nobodyKnew}</h3>
 				<p class="scorer-sub">{retryQuestion.question}</p>
 				<div class="answer-box-inline">
-					<div class="answer-label-inline">Antwort</div>
+					<div class="answer-label-inline">{$t.game.answer}</div>
 					<div class="answer-text-inline">{retryQuestion.answer}</div>
 				</div>
-				<button class="btn-skip" onclick={confirmSkip}>Weiter</button>
+				<button class="btn-skip" onclick={confirmSkip}>{$t.game.next}</button>
 			</div>
 		</div>
 	{/if}
@@ -202,9 +203,9 @@
 	{#if showRetryPicker && retryQuestion}
 		<div class="backdrop" role="button" tabindex="-1" onmousedown={() => {}} onkeydown={() => {}}>
 			<div class="scorer-modal" role="dialog" aria-modal="true">
-				<h3 class="scorer-title">Noch jemand?</h3>
+				<h3 class="scorer-title">{$t.game.anyoneElse}</h3>
 				<p class="scorer-sub">
-					-{Math.floor(retryQuestion.points / 2)} Punkte bei falscher Antwort
+					-{Math.floor(retryQuestion.points / 2)} {$t.game.pointsDeducted}
 				</p>
 				<div class="scorer-list">
 					{#each retryEligible as scorer}
@@ -218,7 +219,7 @@
 						</button>
 					{/each}
 				</div>
-				<button class="btn-skip" onclick={skipRetry}> Niemand — überspringen </button>
+				<button class="btn-skip" onclick={skipRetry}>{$t.game.skipNobody}</button>
 			</div>
 		</div>
 	{/if}
@@ -232,7 +233,7 @@
 					<span class="turn-name" style={`color: ${currentTurnEntry.color}`}
 						>{currentTurnEntry.name}</span
 					>
-					ist dran!
+					{$t.game.isTurn}
 				</span>
 			</div>
 		{/if}
@@ -244,16 +245,16 @@
 				class:active={gs.currentBoard === 1}
 				onclick={() => gameStore.switchBoard(1)}
 			>
-				Runde 1
+				{$t.game.round1}
 				{#if gs.board1Complete}<span class="done-badge">✓</span>{/if}
 			</button>
 			<button
 				class="board-tab"
 				class:active={gs.currentBoard === 2}
 				onclick={() => gameStore.switchBoard(2)}
-				title={!gs.board1Complete ? 'Runde 1 muss zuerst abgeschlossen werden' : ''}
+				title={!gs.board1Complete ? $t.game.round1 : ''}
 			>
-				Runde 2
+				{$t.game.round2}
 				{#if !gs.board1Complete}<span class="lock-icon">🔒</span>{/if}
 			</button>
 			<button
@@ -274,7 +275,7 @@
 
 		{#if gs.currentBoard === 2 && !gs.board1Complete}
 			<div class="locked-banner">
-				🔒 Runde 2 wird freigeschaltet, wenn Runde 1 abgeschlossen ist.
+				{$t.game.lockedBanner}
 			</div>
 		{/if}
 

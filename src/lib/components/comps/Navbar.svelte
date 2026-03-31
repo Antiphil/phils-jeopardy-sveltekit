@@ -2,10 +2,35 @@
 	import { page } from '$app/stores';
 	import AuthPopup from './AuthPopup.svelte';
 	import minilogo from "$lib/assets/logo_long.png"
+	import { locale, t } from '$lib/i18n';
+	import type { Locale } from '$lib/i18n';
 
 	let showAuth = $state(false);
+	let showLang = $state(false);
 
 	let user = $derived($page.data.session?.user ?? null);
+
+	const LOCALES: { value: Locale; label: string; flag: string }[] = [
+		{ value: 'de', label: 'DE', flag: '🇩🇪' },
+		{ value: 'en', label: 'EN', flag: '🇬🇧' },
+	];
+
+	let currentLocale = $derived(LOCALES.find(l => l.value === $locale)!);
+
+	function selectLocale(value: Locale) {
+		locale.set(value);
+		showLang = false;
+	}
+
+	$effect(() => {
+		if (!showLang) return;
+		function onOutside(e: MouseEvent) {
+			if (!(e.target as Element).closest('.lang-switcher')) showLang = false;
+		}
+		document.addEventListener('mousedown', onOutside);
+		return () => document.removeEventListener('mousedown', onOutside);
+	});
+
 </script>
 
 <nav class="navbar">
@@ -18,8 +43,45 @@
 
 	<!-- Right-side buttons -->
 	<div class="nav-actions">
+		<!-- Language switcher -->
+		<div class="lang-switcher">
+			<button
+				class="lang-trigger"
+				onclick={() => showLang = !showLang}
+				aria-label="Language"
+				aria-expanded={showLang}
+			>
+				<span>{currentLocale.flag}</span>
+				<span class="lang-label">{currentLocale.label}</span>
+				<svg class="lang-chevron" class:open={showLang} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="6 9 12 15 18 9"/>
+				</svg>
+			</button>
+
+			{#if showLang}
+				<div class="lang-dropdown" role="menu">
+					{#each LOCALES as l}
+						<button
+							class="lang-option"
+							class:active={$locale === l.value}
+							role="menuitem"
+							onclick={() => selectLocale(l.value)}
+						>
+							<span>{l.flag}</span>
+							<span>{l.label}</span>
+							{#if $locale === l.value}
+								<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+									<polyline points="20 6 9 17 4 12"/>
+								</svg>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
+
 		{#if user}
-		<a href="/game-config" class="nav-btn" aria-label="Game Settings">
+		<a href="/game-config" class="nav-btn" aria-label={$t.nav.gameSettings}>
 			<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 				<circle cx="12" cy="12" r="3" />
 				<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -31,7 +93,7 @@
 		<button
 			class="nav-btn user-btn"
 			class:logged-in={!!user}
-			aria-label="User-Profil"
+			aria-label={$t.nav.userProfile}
 			onclick={() => showAuth = !showAuth}
 		>
 			{#if user?.image}
@@ -51,6 +113,7 @@
 {#if showAuth}
 	<AuthPopup onclose={() => showAuth = false} />
 {/if}
+
 
 <style>
 	.navbar {
@@ -121,6 +184,105 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
+
+	.lang-switcher {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.lang-trigger {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		background: #32155a;
+		border: 1.5px solid #5b21b6;
+		border-radius: 999px;
+		color: #c084fc;
+		font-family: 'Nunito', sans-serif;
+		font-size: 0.75rem;
+		font-weight: 700;
+		padding: 0.25rem 0.65rem;
+		cursor: pointer;
+		transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+		height: 34px;
+	}
+
+	.lang-trigger:hover {
+		border-color: #a855f7;
+		background: #3d1a6e;
+		box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+	}
+
+	.lang-label {
+		letter-spacing: 0.5px;
+	}
+
+	.lang-chevron {
+		color: #7c5faa;
+		transition: transform 0.2s;
+		flex-shrink: 0;
+	}
+
+	.lang-chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.lang-dropdown {
+		position: absolute;
+		top: calc(100% + 8px);
+		right: 0;
+		background: #1e0d38;
+		border: 1.5px solid #5b21b6;
+		border-radius: 0.85rem;
+		padding: 0.3rem;
+		min-width: 100px;
+		box-shadow: 0 8px 32px rgba(91, 33, 182, 0.45);
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		z-index: 400;
+		animation: drop-in 0.15s ease-out;
+	}
+
+	@keyframes drop-in {
+		from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+		to   { opacity: 1; transform: translateY(0) scale(1); }
+	}
+
+	.lang-option {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		background: transparent;
+		border: none;
+		border-radius: 0.55rem;
+		color: #a78bca;
+		font-family: 'Nunito', sans-serif;
+		font-size: 0.8rem;
+		font-weight: 700;
+		padding: 0.4rem 0.65rem;
+		cursor: pointer;
+		width: 100%;
+		text-align: left;
+		transition: background 0.12s, color 0.12s;
+	}
+
+	.lang-option:hover {
+		background: #2d1260;
+		color: #e2d0ff;
+	}
+
+	.lang-option.active {
+		color: #c084fc;
+	}
+
+	.lang-option svg {
+		margin-left: auto;
+		color: #a855f7;
+		flex-shrink: 0;
+	}
+
 
 	.nav-btn {
 		width: 40px;

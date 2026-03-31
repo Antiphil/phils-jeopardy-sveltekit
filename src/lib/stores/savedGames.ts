@@ -18,6 +18,7 @@ export type CategoryConfig = {
 export type SavedGame = {
 	id: string;
 	name: string;
+	language?: string; // e.g. 'de', 'en' — optional for backwards compatibility
 	createdAt: string;
 	updatedAt: string;
 	board1: CategoryConfig[];
@@ -107,10 +108,11 @@ function createStore() {
 			}
 		},
 
-		async create(): Promise<SavedGame> {
+		async create(language?: string): Promise<SavedGame> {
 			const game: SavedGame = {
 				id: crypto.randomUUID(),
 				name: 'Neues Spiel',
+				language,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 				board1: makeBoard(1),

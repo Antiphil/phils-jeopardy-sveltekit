@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { savedGamesStore, formatDate } from '$lib/stores/savedGames';
+	import { savedGamesStore } from '$lib/stores/savedGames';
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import CategoryEditor from '$lib/components/admin/CategoryEditor.svelte';
+	import GameListItem from '$lib/components/admin/GameListItem.svelte';
+	import { locale } from '$lib/i18n';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -12,8 +14,6 @@
 	let editing: SavedGame | null = $state(null);
 	let activeTab: Tab = $state('board1');
 	let saved = $state(false);
-	let deleteConfirm: string | null = $state(null);
-	let deleteConfirmFinal: string | null = $state(null);
 
 	function selectGame(game: SavedGame) {
 		editing = structuredClone(game);
@@ -21,7 +21,7 @@
 	}
 
 	async function newGame() {
-		const created = await savedGamesStore.create();
+		const created = await savedGamesStore.create($locale);
 		editing = structuredClone(created);
 		activeTab = 'board1';
 	}
@@ -37,10 +37,7 @@
 	async function deleteGame(id: string) {
 		await savedGamesStore.delete(id);
 		if (editing?.id === id) editing = null;
-		deleteConfirm = null;
-		deleteConfirmFinal = null;
 	}
-
 </script>
 
 <div class="admin-layout">
@@ -51,139 +48,123 @@
 			<span class="sidebar-title">🎮 Spiele</span>
 			<button class="btn-new" onclick={newGame}>＋ Neu</button>
 		</div>
-
 		<div class="game-list">
 			{#if games.length === 0}
 				<div class="empty-hint">Noch keine Spiele.<br/>Klick auf "＋ Neu".</div>
 			{/if}
 			{#each games as game (game.id)}
-				<div
-					class="game-item"
-					class:active={editing?.id === game.id}
-					class:is-public={game.isPublic}
-					role="button"
-					tabindex="0"
-					onclick={() => selectGame(game)}
-					onkeydown={(e) => e.key === 'Enter' && selectGame(game)}
-				>
-					<div class="game-item-info">
-						<div class="game-item-name-row">
-							<span class="game-item-name">{game.name}</span>
-							{#if game.isPublic}
-								<span class="public-badge">🌐</span>
-							{/if}
-						</div>
-						<span class="game-item-date">{formatDate(game.updatedAt)}</span>
-					</div>
-					{#if game.isPublic && deleteConfirmFinal === game.id}
-						<div class="delete-confirm" onclick={(e) => e.stopPropagation()} role="presentation">
-							<span style="font-size:0.72rem;color:#f87171;">Wirklich sicher?</span>
-							<button class="del-yes" onclick={() => deleteGame(game.id)}>Ja</button>
-							<button class="del-no" onclick={() => { deleteConfirm = null; deleteConfirmFinal = null; }}>Nein</button>
-						</div>
-					{:else if game.isPublic && deleteConfirm === game.id}
-						<div class="delete-confirm" onclick={(e) => e.stopPropagation()} role="presentation">
-							<span style="font-size:0.72rem;color:#fbbf24;">Öffentlich!</span>
-							<button class="del-yes del-warn" onclick={() => deleteConfirmFinal = game.id}>Weiter</button>
-							<button class="del-no" onclick={() => deleteConfirm = null}>Nein</button>
-						</div>
-					{:else if deleteConfirm === game.id}
-						<div class="delete-confirm" onclick={(e) => e.stopPropagation()} role="presentation">
-							<span style="font-size:0.72rem;color:#f87171;">Löschen?</span>
-							<button class="del-yes" onclick={() => deleteGame(game.id)}>Ja</button>
-							<button class="del-no"  onclick={() => deleteConfirm = null}>Nein</button>
-						</div>
-					{:else}
-						<button
-							class="game-item-del"
-							aria-label="Spiel löschen"
-							onclick={(e) => { e.stopPropagation(); deleteConfirm = game.id; }}
-						>🗑</button>
-					{/if}
-				</div>
+				<GameListItem
+					{game}
+					active={editing?.id === game.id}
+					onselect={() => selectGame(game)}
+					ondelete={() => deleteGame(game.id)}
+				/>
 			{/each}
 		</div>
 	</aside>
 
 	<!-- Main editor -->
 	<main class="editor">
-		{#if !editing}
-			<div class="empty-state">
-				<div class="empty-icon">🎯</div>
-				<p class="empty-text">Wähle ein Spiel aus<br/>oder erstelle ein neues.</p>
-				<button class="btn-primary" onclick={newGame}>＋ Neues Spiel erstellen</button>
-			</div>
-		{:else}
-			<!-- Top bar -->
+		{#if editing}
 			<div class="editor-topbar">
-				<input
-					class="game-name-input"
-					type="text"
-					placeholder="Spielname…"
-					maxlength={48}
-					bind:value={editing.name}
-				/>
-				{#if data.isAdmin}
-					<button
-						class="btn-publish"
-						class:published={editing.isPublic}
-						onclick={() => {
-							if (!editing) return;
-							const next = !editing.isPublic;
-							savedGamesStore.togglePublic(editing.id, next);
-							editing = { ...editing, isPublic: next };
-						}}
-						title={editing.isPublic ? 'Öffentlich – klicken zum Deaktivieren' : 'Privat – klicken zum Veröffentlichen'}
-					>
-						{#if editing.isPublic}🌐 Öffentlich{:else}🔒 Privat{/if}
+				<div class="topbar-row">
+					<input
+						class="game-name-input"
+						type="text"
+						placeholder="Spielname…"
+						maxlength={48}
+						bind:value={editing.name}
+					/>
+					<button class="btn-save" class:saved onclick={saveGame}>
+						{#if saved}✓ Gespeichert{:else}💾 Speichern{/if}
 					</button>
-				{/if}
-				<button class="btn-save" class:saved onclick={saveGame}>
-					{#if saved}✓ Gespeichert{:else}💾 Speichern{/if}
-				</button>
+				</div>
+				<div class="topbar-row topbar-options">
+					<div class="option-field">
+						<span class="option-label">Sprache</span>
+						<div class="lang-picker">
+							{#each [{ value: 'de', flag: '🇩🇪', name: 'DE' }, { value: 'en', flag: '🇬🇧', name: 'EN' }] as l}
+								<button
+									class="lang-pick-btn"
+									class:active={editing.language === l.value}
+									onclick={() => { if (editing) editing = { ...editing, language: l.value }; }}
+								>{l.flag} {l.name}</button>
+							{/each}
+						</div>
+					</div>
+					<div class="option-field">
+						<span class="option-label">Chaos Category</span>
+						<button
+							class="btn-toggle"
+							class:active={editing.chaosEnabled}
+							onclick={() => {
+								if (!editing) return;
+								const next = !editing.chaosEnabled;
+								editing = { ...editing, chaosEnabled: next };
+								if (!next && activeTab === 'chaos') activeTab = 'board1';
+							}}
+						>
+							{#if editing.chaosEnabled}🎲 Aktiv{:else}🎲 Deaktiviert{/if}
+						</button>
+					</div>
+					{#if data.isAdmin}
+						<div class="option-field">
+							<span class="option-label">Sichtbarkeit</span>
+							<button
+								class="btn-publish"
+								class:published={editing.isPublic}
+								onclick={() => {
+									if (!editing) return;
+									const next = !editing.isPublic;
+									savedGamesStore.togglePublic(editing.id, next);
+									editing = { ...editing, isPublic: next };
+								}}
+							>
+								{#if editing.isPublic}🌐 Öffentlich{:else}🔒 Privat{/if}
+							</button>
+						</div>
+					{/if}
+				</div>
 			</div>
 
-			<!-- Tabs -->
 			<div class="tabs">
 				<button class="tab" class:active={activeTab === 'board1'} onclick={() => activeTab = 'board1'}>
-					Runde 1
-					<span class="tab-pts">100–500</span>
+					Runde 1 <span class="tab-pts">100–500</span>
 				</button>
 				<button class="tab" class:active={activeTab === 'board2'} onclick={() => activeTab = 'board2'}>
-					Runde 2
-					<span class="tab-pts">200–1000</span>
+					Runde 2 <span class="tab-pts">200–1000</span>
 				</button>
-				<button class="tab phil-tab" class:active={activeTab === 'chaos'} onclick={() => activeTab = 'chaos'}>
-					🎲 Chaos Category
-				</button>
+				{#if editing.chaosEnabled}
+					<button class="tab phil-tab" class:active={activeTab === 'chaos'} onclick={() => activeTab = 'chaos'}>
+						🎲 Chaos Category
+					</button>
+				{/if}
 			</div>
 
-			<!-- Category editors -->
 			<div class="categories-scroll">
-				{#if activeTab === 'board1'}
+				{#if activeTab === 'chaos'}
+					<div class="categories-grid single">
+						<CategoryEditor bind:category={editing.chaosCategory} isPhil={true} />
+					</div>
+				{:else if activeTab === 'board1'}
 					<div class="categories-grid">
 						{#each editing.board1 as _, i}
 							<CategoryEditor bind:category={editing.board1[i]} />
 						{/each}
 					</div>
-				{:else if activeTab === 'board2'}
+				{:else}
 					<div class="categories-grid">
 						{#each editing.board2 as _, i}
 							<CategoryEditor bind:category={editing.board2[i]} />
 						{/each}
 					</div>
-				{:else if activeTab === 'chaos'}
-					<div class="categories-grid single">
-						<div class="chaos-toggle-row">
-							<label class="chaos-toggle-label">
-								<input type="checkbox" bind:checked={editing.chaosEnabled} class="chaos-checkbox" />
-								<span>Chaos Category aktiviert</span>
-							</label>
-							<span class="chaos-toggle-hint">Wenn deaktiviert, wird die Spalte im Gameboard ausgeblendet</span>
-						</div>
-						<CategoryEditor bind:category={editing.chaosCategory} isPhil={true} />
-					</div>
 				{/if}
+			</div>
+		{:else}
+			<div class="empty-state">
+				<div class="empty-icon">🎯</div>
+				<p class="empty-text">Wähle ein Spiel aus<br/>oder erstelle ein neues.</p>
+				<button class="btn-primary" onclick={newGame}>＋ Neues Spiel erstellen</button>
 			</div>
 		{/if}
 	</main>
@@ -256,104 +237,6 @@
 		line-height: 1.6;
 	}
 
-	.game-item {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		background: #1e0d38;
-		border: 1.5px solid #3d1a6e;
-		border-radius: 0.65rem;
-		padding: 0.55rem 0.7rem;
-		cursor: pointer;
-		transition: border-color 0.15s, background 0.15s;
-	}
-
-	.game-item:hover { border-color: #7c3aed; background: #261040; }
-	.game-item.active { border-color: #a855f7; background: #2d1260; }
-
-	.game-item.is-public {
-		border-color: #a16207;
-		background: #1a1208;
-	}
-
-	.game-item.is-public:hover { border-color: #ca8a04; background: #1e1609; }
-	.game-item.is-public.active { border-color: #fbbf24; background: #22190a; }
-
-	.game-item-name-row {
-		display: flex;
-		align-items: center;
-		gap: 0.3rem;
-		min-width: 0;
-	}
-
-	.public-badge {
-		font-size: 0.75rem;
-		flex-shrink: 0;
-	}
-
-	.game-item-lock {
-		font-size: 0.8rem;
-		opacity: 0.6;
-		flex-shrink: 0;
-		padding: 0.1rem;
-	}
-
-	.game-item-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-		min-width: 0;
-		flex: 1;
-	}
-
-	.game-item-name {
-		font-family: 'Fredoka One', cursive;
-		font-size: 0.9rem;
-		color: #e2d0ff;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.game-item-date {
-		font-size: 0.7rem;
-		color: #6b47a0;
-	}
-
-	.game-item-del {
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		font-size: 0.85rem;
-		opacity: 0.4;
-		transition: opacity 0.15s;
-		flex-shrink: 0;
-		padding: 0.1rem;
-	}
-
-	.game-item-del:hover { opacity: 1; }
-
-	.delete-confirm {
-		display: flex;
-		align-items: center;
-		gap: 0.3rem;
-		flex-shrink: 0;
-	}
-
-	.del-yes, .del-no {
-		font-size: 0.7rem;
-		font-family: 'Fredoka One', cursive;
-		border-radius: 999px;
-		border: none;
-		padding: 0.15rem 0.5rem;
-		cursor: pointer;
-	}
-
-	.del-yes { background: #be123c; color: white; }
-	.del-yes.del-warn { background: #a16207; color: white; }
-	.del-no  { background: #3d1a6e; color: #c084fc; }
-
 	/* ── Editor ──────────────────────────────────────── */
 	.editor {
 		flex: 1;
@@ -370,7 +253,6 @@
 		align-items: center;
 		justify-content: center;
 		gap: 1rem;
-		color: #5b2d8a;
 	}
 
 	.empty-icon { font-size: 3.5rem; }
@@ -399,12 +281,37 @@
 
 	.editor-topbar {
 		display: flex;
-		align-items: center;
-		gap: 0.75rem;
+		flex-direction: column;
+		gap: 0.5rem;
 		padding: 0.85rem 1.25rem;
 		border-bottom: 1.5px solid #3d1a6e;
 		flex-shrink: 0;
 		background: #160930;
+	}
+
+	.topbar-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.topbar-options {
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.option-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.option-label {
+		font-size: 0.65rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.7px;
+		color: #7c5faa;
 	}
 
 	.game-name-input {
@@ -457,22 +364,9 @@
 		transition: background 0.2s, color 0.2s, border-color 0.2s;
 	}
 
-	.btn-publish:hover {
-		border-color: #a855f7;
-		color: #c084fc;
-	}
-
-	.btn-publish.published {
-		background: #14532d30;
-		color: #4ade80;
-		border-color: #16a34a;
-	}
-
-	.btn-publish.published:hover {
-		background: #7f1d1d30;
-		color: #f87171;
-		border-color: #b91c1c;
-	}
+	.btn-publish:hover { border-color: #a855f7; color: #c084fc; }
+	.btn-publish.published { background: #14532d30; color: #4ade80; border-color: #16a34a; }
+	.btn-publish.published:hover { background: #7f1d1d30; color: #f87171; border-color: #b91c1c; }
 
 	/* ── Tabs ────────────────────────────────────────── */
 	.tabs {
@@ -502,22 +396,9 @@
 	}
 
 	.tab:hover { background: #261040; color: #c084fc; }
+	.tab.active { background: #12082a; color: #c084fc; border-color: #7c3aed; border-bottom-color: #12082a; }
 
-	.tab.active {
-		background: #12082a;
-		color: #c084fc;
-		border-color: #7c3aed;
-		border-bottom-color: #12082a;
-	}
-
-	.tab-pts {
-		font-size: 0.68rem;
-		color: #fbbf24;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 800;
-	}
-
-	.tab.active .tab-pts { color: #fbbf24; }
+	.tab-pts { font-size: 0.68rem; color: #fbbf24; font-family: 'Nunito', sans-serif; font-weight: 800; }
 
 	.phil-tab { color: #f0abfc; border-color: #7c1a8a; }
 	.phil-tab.active { border-color: #d946ef; color: #f0abfc; }
@@ -535,40 +416,50 @@
 		gap: 0.85rem;
 	}
 
-	.categories-grid.single {
-		grid-template-columns: minmax(320px, 600px);
-	}
+	.categories-grid.single { grid-template-columns: minmax(320px, 600px); }
 
-	.chaos-toggle-row {
-		display: flex;
-		flex-direction: column;
-		gap: 0.3rem;
+	.btn-toggle {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.85rem;
 		background: #1e0d38;
+		color: #7c5faa;
 		border: 1.5px solid #3d1a6e;
-		border-radius: 0.75rem;
-		padding: 0.85rem 1rem;
+		border-radius: 999px;
+		padding: 0.45rem 1rem;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background 0.2s, color 0.2s, border-color 0.2s;
 	}
 
-	.chaos-toggle-label {
+	.btn-toggle:hover { border-color: #a855f7; color: #c084fc; }
+	.btn-toggle.active { background: #2a0d4e; color: #d8b4fe; border-color: #7c3aed; }
+
+	.lang-picker {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.2rem;
+		background: #1e0d38;
+		border: 1.5px solid #3d1a6e;
+		border-radius: 999px;
+		padding: 0.2rem 0.3rem;
+		flex-shrink: 0;
+	}
+
+	.lang-pick-btn {
+		font-size: 0.85rem;
+		background: transparent;
+		border: 1.5px solid transparent;
+		border-radius: 999px;
+		padding: 0.2rem 0.5rem;
+		cursor: pointer;
+		opacity: 0.45;
 		font-family: 'Fredoka One', cursive;
-		font-size: 0.95rem;
-		color: #e2d0ff;
-		cursor: pointer;
+		color: #c084fc;
+		transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+		line-height: 1;
+		white-space: nowrap;
 	}
 
-	.chaos-checkbox {
-		width: 18px;
-		height: 18px;
-		accent-color: #a855f7;
-		cursor: pointer;
-	}
-
-	.chaos-toggle-hint {
-		font-size: 0.72rem;
-		color: #6b47a0;
-		padding-left: 1.6rem;
-	}
+	.lang-pick-btn:hover { opacity: 0.75; }
+	.lang-pick-btn.active { opacity: 1; border-color: #5b21b6; background: #32155a; }
 </style>

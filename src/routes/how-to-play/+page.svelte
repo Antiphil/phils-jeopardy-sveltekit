@@ -6,7 +6,7 @@
 		{ icon: '🗂️', label: 'Aufbau' },
 		{ icon: '🎮', label: 'Ablauf' },
 		{ icon: '💥', label: 'Punkte' },
-		{ icon: '🎲', label: 'Phil' },
+		{ icon: '🎲', label: 'Chaos' },
 		{ icon: '👥', label: 'Teams' },
 	];
 </script>
@@ -117,12 +117,10 @@
 
 				<div class="info-row">
 					<div class="info-chip">
-						<span class="ic-icon">6️⃣</span>
-						<span>Kategorien pro Runde</span>
+						<span>6 Kategorien pro Runde</span>
 					</div>
 					<div class="info-chip">
-						<span class="ic-icon">5️⃣</span>
-						<span>Fragen pro Kategorie</span>
+						<span>5 Fragen pro Kategorie</span>
 					</div>
 					<div class="info-chip">
 						<span class="ic-icon">🔒</span>

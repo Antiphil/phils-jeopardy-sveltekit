@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
+
 	let { onclose, onstart }: {
 		onclose: () => void;
 		onstart: (players: Player[], teams: Team[] | null) => void;
@@ -7,9 +9,9 @@
 	type Player = { id: number; name: string; avatar: string };
 	type Team   = { id: number; name: string; color: string; playerIds: number[] };
 
-	const AVATARS = ['🦊','🐼','🐸','🦄','🐯','🦁','🐶','🐱','🐻','🦋','🐲','👾'];
+	const AVATARS = ['🦊','🐼','🐸','🦄','🐯','🦁','🐶','🐱','🐻','🦇','🦋','🐲','👾','🐭','🐻‍❄️','🐢'];
 	const TEAM_COLORS = ['#a855f7','#d946ef','#fbbf24','#34d399','#38bdf8','#f87171'];
-	const TEAM_NAMES  = ['Team Lila','Team Pink','Team Gold','Team Grün','Team Blau','Team Rot'];
+	let TEAM_NAMES = $derived($t.playerSetup.teamNames);
 
 	let players: Player[] = $state([
 		{ id: 1, name: '', avatar: '🦊' },
@@ -69,12 +71,12 @@
 
 		<!-- Header -->
 		<div class="modal-header">
-			<h2 class="modal-title">Spieler einrichten 🎮</h2>
-			<button class="close-btn" onclick={onclose} aria-label="Schließen">✕</button>
+			<h2 class="modal-title">{$t.playerSetup.title}</h2>
+			<button class="close-btn" onclick={onclose} aria-label={$t.playerSetup.close}>✕</button>
 		</div>
 
 		<!-- Players list -->
-		<div class="section-label">Spieler</div>
+		<div class="section-label">{$t.playerSetup.players}</div>
 		<div class="players-list">
 			{#each players as player (player.id)}
 				{@const team = teamsEnabled ? teamOfPlayer(player.id) : undefined}
@@ -97,7 +99,7 @@
 					<input
 						class="player-input"
 						type="text"
-						placeholder="Spielername…"
+						placeholder={$t.playerSetup.playerName}
 						maxlength={20}
 						bind:value={player.name}
 					/>
@@ -119,7 +121,7 @@
 		</div>
 
 		<button class="add-player-btn" onclick={addPlayer}>
-			＋ Spieler hinzufügen
+			{$t.playerSetup.addPlayer}
 		</button>
 
 		<!-- Divider -->
@@ -129,8 +131,8 @@
 		<div class="teams-section">
 			<div class="toggle-row">
 				<div>
-					<div class="section-label" style="margin-bottom: 0.1rem">Teams aktivieren</div>
-					<div class="toggle-hint">Spieler werden automatisch auf Teams verteilt</div>
+					<div class="section-label" style="margin-bottom: 0.1rem">{$t.playerSetup.enableTeams}</div>
+					<div class="toggle-hint">{$t.playerSetup.teamsHint}</div>
 				</div>
 				<button
 					class="toggle"
@@ -146,7 +148,7 @@
 
 			{#if teamsEnabled}
 				<div class="team-count-row">
-					<span class="toggle-hint">Anzahl Teams</span>
+					<span class="toggle-hint">{$t.playerSetup.teamCount}</span>
 					<div class="count-btns">
 						{#each [2,3,4] as n}
 							<button
@@ -173,13 +175,13 @@
 
 		<!-- Footer -->
 		<div class="modal-footer">
-			<button class="btn-cancel" onclick={onclose}>Abbrechen</button>
+			<button class="btn-cancel" onclick={onclose}>{$t.playerSetup.cancel}</button>
 			<button
 				class="btn-start"
 				onclick={handleStart}
 				disabled={players.filter(p => p.name.trim()).length === 0}
 			>
-				▶ Spiel starten
+				{$t.playerSetup.startGame}
 			</button>
 		</div>
 
@@ -205,7 +207,7 @@
 <style>
 	.backdrop {
 		position: fixed;
-		inset: 0;
+		inset: 70px 0 0 0;
 		background: rgba(10, 4, 20, 0.75);
 		backdrop-filter: blur(6px);
 		z-index: 100;
@@ -222,7 +224,7 @@
 		padding: 1.75rem;
 		width: 100%;
 		max-width: 480px;
-		max-height: 90vh;
+		max-height: calc(100vh - 70px - 2rem);
 		overflow-y: auto;
 		box-shadow: 0 8px 48px rgba(168, 85, 247, 0.35);
 		display: flex;

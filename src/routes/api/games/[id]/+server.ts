@@ -15,6 +15,7 @@ function toSavedGame(row: typeof savedGames.$inferSelect): SavedGame {
 	return {
 		id: row.id,
 		name: row.name,
+		language: row.language ?? undefined,
 		board1: row.board1 as CategoryConfig[],
 		board2: row.board2 as CategoryConfig[],
 		chaosCategory: row.chaosCategory as CategoryConfig,
@@ -32,6 +33,7 @@ export const PUT: RequestHandler = async (event) => {
 		.update(savedGames)
 		.set({
 			name: body.name,
+			language: body.language ?? null,
 			board1: body.board1 as unknown as typeof savedGames.$inferInsert['board1'],
 			board2: body.board2 as unknown as typeof savedGames.$inferInsert['board2'],
 			chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],

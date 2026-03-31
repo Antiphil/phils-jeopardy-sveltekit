@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { gameStore } from '$lib/stores/game';
+	import { t } from '$lib/i18n';
+	import Tooltip from './Tooltip.svelte';
 
 	let gs = $derived($gameStore);
 
@@ -42,10 +44,38 @@
 
 	// Who is currently active (by original index)
 	let activeOriginalIndex = $derived(gs?.currentTurnIndex ?? 0);
+
+	let visible = $state(true);
 </script>
 
 {#if gs && entries.length > 0}
 	<div class="scoreboard">
+		<Tooltip text={visible ? 'Scoreboard ausblenden' : 'Scoreboard einblenden'} position="top">
+		<button class="toggle-btn" onclick={() => visible = !visible} aria-label="Scoreboard ein-/ausblenden">
+			{#if visible}
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="18 15 12 9 6 15"/>
+				</svg>
+			{:else}
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="6 9 12 15 18 9"/>
+				</svg>
+				<span class="mini-players">
+					{#each entries as entry}
+						<span
+							class="mini-player"
+							class:mini-active={entry.originalIndex === activeOriginalIndex}
+							style={entry.originalIndex === activeOriginalIndex ? `color: ${entry.color}` : ''}
+						>
+							{entry.avatar}
+						</span>
+					{/each}
+				</span>
+			{/if}
+		</button>
+		</Tooltip>
+
+		{#if visible}
 		<div class="scoreboard-inner">
 			{#each ranked as entry, rank}
 				{@const isActive = entry.originalIndex === activeOriginalIndex}
@@ -83,11 +113,12 @@
 					</div>
 
 					{#if isActive}
-						<span class="dran-badge">Dran!</span>
+						<span class="dran-badge">{$t.scoreboard.turn}</span>
 					{/if}
 				</div>
 			{/each}
 		</div>
+		{/if}
 	</div>
 {/if}
 
@@ -97,8 +128,48 @@
 		bottom: 0;
 		left: 0;
 		width: 100%;
-		padding: 0.5rem 1.5rem 1rem;
+		padding: 0.35rem 1.5rem 0.75rem;
 		z-index: 50;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.toggle-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: #1e0d38cc;
+		border: 1.5px solid #3d1a6e;
+		border-radius: 999px;
+		color: #7c5faa;
+		padding: 0.2rem 0.75rem;
+		cursor: pointer;
+		font-size: 0.75rem;
+		backdrop-filter: blur(6px);
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.toggle-btn:hover {
+		border-color: #a855f7;
+		color: #c084fc;
+	}
+
+	.mini-players {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.mini-player {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.8rem;
+		opacity: 0.5;
+	}
+
+	.mini-player.mini-active {
+		opacity: 1;
 	}
 
 	.scoreboard-inner {

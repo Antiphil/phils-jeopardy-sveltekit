@@ -18,6 +18,7 @@ export const load = async (event: Parameters<PageServerLoad>[0]) => {
 	const publicGames: SavedGame[] = publicRows.map((row) => ({
 		id: row.id,
 		name: row.name,
+		language: row.language ?? undefined,
 		board1: row.board1 as CategoryConfig[],
 		board2: row.board2 as CategoryConfig[],
 		chaosCategory: row.chaosCategory as CategoryConfig,

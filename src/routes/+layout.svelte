@@ -6,6 +6,7 @@
 	import { savedGamesStore } from '$lib/stores/savedGames';
 	import { setGameUser } from '$lib/stores/game';
 	import { playClick } from '$lib/sounds';
+	import { t, locale } from '$lib/i18n';
 	import type { LayoutData } from './$types';
 
 	let { children, data }: { children: import('svelte').Snippet; data: LayoutData } = $props();
@@ -16,6 +17,7 @@
 		const uid = data.session?.user?.id ?? null;
 		savedGamesStore._setUser(uid);
 		setGameUser(uid);
+		locale.init();
 	}
 
 	// Also react to login / logout without a full page reload.
@@ -50,9 +52,9 @@
 {@render children()}
 
 <footer class="legal-footer">
-	<a href="/privacy">Datenschutz</a>
+	<a href="/privacy">{$t.layout.privacy}</a>
 	<span>·</span>
-	<a href="/terms">Nutzungsbedingungen</a>
+	<a href="/terms">{$t.layout.terms}</a>
 </footer>
 
 <style>

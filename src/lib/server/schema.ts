@@ -1,5 +1,4 @@
 import { pgTable, text, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core';
-
 export const users = pgTable('users', {
 	id: text('id').primaryKey(),
 	name: text('name'),
@@ -13,6 +12,7 @@ export const savedGames = pgTable('saved_games', {
 	id: text('id').primaryKey(),
 	userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
 	name: text('name').notNull().default('Neues Spiel'),
+	language: text('language'),
 	board1: jsonb('board1').notNull(),
 	board2: jsonb('board2').notNull(),
 	chaosCategory: jsonb('chaos_category').notNull(),

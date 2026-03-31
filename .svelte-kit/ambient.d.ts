@@ -38,6 +38,12 @@
  * The above values will be the same _even if_ different values for `ENVIRONMENT` or `PUBLIC_BASE_URL` are set at runtime, as they are statically replaced in your code with their build time values.
  */
 declare module '$env/static/private' {
+	export const AUTH_SECRET: string;
+	export const AUTH_DISCORD_ID: string;
+	export const AUTH_DISCORD_SECRET: string;
+	export const AUTH_GOOGLE_ID: string;
+	export const AUTH_GOOGLE_SECRET: string;
+	export const DATABASE_URL: string;
 	export const SHELL: string;
 	export const npm_command: string;
 	export const SESSION_MANAGER: string;
@@ -64,8 +70,8 @@ declare module '$env/static/private' {
 	export const EDITOR: string;
 	export const XDG_SEAT: string;
 	export const PWD: string;
-	export const LOGNAME: string;
 	export const XDG_SESSION_DESKTOP: string;
+	export const LOGNAME: string;
 	export const XDG_SESSION_TYPE: string;
 	export const npm_config_init_module: string;
 	export const SYSTEMD_EXEC_PID: string;
@@ -75,8 +81,8 @@ declare module '$env/static/private' {
 	export const VSCODE_INJECTION: string;
 	export const GTK2_RC_FILES: string;
 	export const HOME: string;
-	export const LANG: string;
 	export const LC_PAPER: string;
+	export const LANG: string;
 	export const RUSTICL_ENABLE: string;
 	export const _JAVA_AWT_WM_NONREPARENTING: string;
 	export const XDG_CURRENT_DESKTOP: string;
@@ -126,8 +132,8 @@ declare module '$env/static/private' {
 	export const LC_TIME: string;
 	export const VSCODE_GIT_ASKPASS_MAIN: string;
 	export const JOURNAL_STREAM: string;
-	export const KDE_FULL_SESSION: string;
 	export const GDK_BACKEND: string;
+	export const KDE_FULL_SESSION: string;
 	export const npm_config_noproxy: string;
 	export const PATH: string;
 	export const npm_config_node_gyp: string;
@@ -139,6 +145,7 @@ declare module '$env/static/private' {
 	export const LC_NUMERIC: string;
 	export const TERM_PROGRAM: string;
 	export const _: string;
+	export const NODE_ENV: string;
 }
 
 /**
@@ -225,6 +232,12 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		AUTH_SECRET: string;
+		AUTH_DISCORD_ID: string;
+		AUTH_DISCORD_SECRET: string;
+		AUTH_GOOGLE_ID: string;
+		AUTH_GOOGLE_SECRET: string;
+		DATABASE_URL: string;
 		SHELL: string;
 		npm_command: string;
 		SESSION_MANAGER: string;
@@ -251,8 +264,8 @@ declare module '$env/dynamic/private' {
 		EDITOR: string;
 		XDG_SEAT: string;
 		PWD: string;
-		LOGNAME: string;
 		XDG_SESSION_DESKTOP: string;
+		LOGNAME: string;
 		XDG_SESSION_TYPE: string;
 		npm_config_init_module: string;
 		SYSTEMD_EXEC_PID: string;
@@ -262,8 +275,8 @@ declare module '$env/dynamic/private' {
 		VSCODE_INJECTION: string;
 		GTK2_RC_FILES: string;
 		HOME: string;
-		LANG: string;
 		LC_PAPER: string;
+		LANG: string;
 		RUSTICL_ENABLE: string;
 		_JAVA_AWT_WM_NONREPARENTING: string;
 		XDG_CURRENT_DESKTOP: string;
@@ -313,8 +326,8 @@ declare module '$env/dynamic/private' {
 		LC_TIME: string;
 		VSCODE_GIT_ASKPASS_MAIN: string;
 		JOURNAL_STREAM: string;
-		KDE_FULL_SESSION: string;
 		GDK_BACKEND: string;
+		KDE_FULL_SESSION: string;
 		npm_config_noproxy: string;
 		PATH: string;
 		npm_config_node_gyp: string;
@@ -326,6 +339,7 @@ declare module '$env/dynamic/private' {
 		LC_NUMERIC: string;
 		TERM_PROGRAM: string;
 		_: string;
+		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}

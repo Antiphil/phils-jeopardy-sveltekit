@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { savedGamesStore, formatDate } from '$lib/stores/savedGames';
+	import { t, locale } from '$lib/i18n';
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import type { Player, Team } from '$lib/stores/game';
 
@@ -12,12 +13,13 @@
 		onstart: (game: SavedGame | null) => void;
 	} = $props();
 
-	const publicIds = $derived(new Set(publicGames.map((g) => g.id)));
+	const filteredPublicGames = $derived(publicGames.filter((g) => !g.language || g.language === $locale));
+	const publicIds = $derived(new Set(filteredPublicGames.map((g) => g.id)));
 	let games = $derived($savedGamesStore.filter((g) => !publicIds.has(g.id)));
 	let selectedId: string | null = $state(null);
 
 	let selectedGame = $derived(
-		games.find(g => g.id === selectedId) ?? publicGames.find(g => g.id === selectedId) ?? null
+		games.find(g => g.id === selectedId) ?? filteredPublicGames.find(g => g.id === selectedId) ?? null
 	);
 
 	function handleBackdrop(e: MouseEvent) {
@@ -31,10 +33,10 @@
 		<!-- Header -->
 		<div class="modal-header">
 			<div>
-				<div class="step-badge">Schritt 2 von 2</div>
-				<h2 class="modal-title">Spiel auswählen 🎯</h2>
+				<div class="step-badge">{$t.gameSelect.step}</div>
+				<h2 class="modal-title">{$t.gameSelect.title}</h2>
 			</div>
-			<button class="close-btn" onclick={onback} aria-label="Zurück">✕</button>
+			<button class="close-btn" onclick={onback} aria-label={$t.gameSelect.back}>✕</button>
 		</div>
 
 		<!-- Players summary -->
@@ -52,14 +54,14 @@
 			{/if}
 		</div>
 
-		<div class="section-label">Welches Spiel wollt ihr spielen?</div>
+		<div class="section-label">{$t.gameSelect.whichGame}</div>
 
 		<!-- Game cards -->
 		<div class="games-list">
 
-			{#if publicGames.length > 0}
-				<div class="section-divider">⭐ Offizielle Spiele</div>
-				{#each publicGames as game (game.id)}
+			{#if filteredPublicGames.length > 0}
+				<div class="section-divider">{$t.gameSelect.officialGames}</div>
+				{#each filteredPublicGames as game (game.id)}
 					<button
 						class="game-card game-card-public"
 						class:selected={selectedId === game.id}
@@ -67,7 +69,7 @@
 					>
 						<div class="game-card-icon">🏆</div>
 						<div class="game-card-info">
-							<span class="game-card-name">{game.name}</span>
+							<span class="game-card-name">{game.name}{#if game.language} <span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}</span>
 							
 							<div class="game-card-cats">
 								{#each game.board1.slice(0, 4) as cat}
@@ -86,17 +88,17 @@
 			{/if}
 
 			{#if games.length > 0}
-				<div class="section-divider">🗂️ Meine Spiele</div>
+				<div class="section-divider">{$t.gameSelect.myGames}</div>
 			{/if}
 
 			{#if games.length === 0}
 				<div class="no-games">
 					{#if loggedIn}
-						Noch keine eigenen Spiele erstellt.<br/>
-						<a href="/game-config">→ Jetzt in Game Settings erstellen</a>
+						{$t.gameSelect.noGamesLoggedIn}<br/>
+						<a href="/game-config">{$t.gameSelect.noGamesLoggedInLink}</a>
 					{:else}
-						Melde dich an, um eigene Spiele zu erstellen.<br/>
-						<a href="/auth/signin">→ Jetzt einloggen</a>
+						{$t.gameSelect.noGamesLoggedOut}<br/>
+						<a href="/auth/signin">{$t.gameSelect.noGamesLoggedOutLink}</a>
 					{/if}
 				</div>
 			{:else}
@@ -108,7 +110,7 @@
 					>
 						<div class="game-card-icon">🗂️</div>
 						<div class="game-card-info">
-							<span class="game-card-name">{game.name}</span>
+							<span class="game-card-name">{game.name}{#if game.language} <span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}</span>
 
 							<div class="game-card-cats">
 								{#each game.board1.slice(0, 4) as cat}
@@ -129,13 +131,13 @@
 
 		<!-- Footer -->
 		<div class="modal-footer">
-			<button class="btn-back" onclick={onback}>← Zurück</button>
+			<button class="btn-back" onclick={onback}>{$t.gameSelect.back}</button>
 			<button
 				class="btn-start"
 				disabled={selectedId === null}
 				onclick={() => onstart(selectedGame)}
 			>
-				▶ Spiel starten
+				{$t.gameSelect.startGame}
 			</button>
 		</div>
 
@@ -145,7 +147,7 @@
 <style>
 	.backdrop {
 		position: fixed;
-		inset: 0;
+		inset: 70px 0 0 0;
 		background: rgba(10, 4, 20, 0.78);
 		backdrop-filter: blur(6px);
 		z-index: 100;
@@ -162,7 +164,7 @@
 		padding: 1.75rem;
 		width: 100%;
 		max-width: 500px;
-		max-height: 90vh;
+		max-height: calc(100vh - 70px - 2rem);
 		overflow-y: auto;
 		box-shadow: 0 8px 48px rgba(168, 85, 247, 0.35);
 		display: flex;
@@ -292,6 +294,11 @@
 		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
 		color: #f3e8ff;
+	}
+
+	.game-lang {
+		font-size: 0.85rem;
+		vertical-align: middle;
 	}
 
 	.game-card-meta {
