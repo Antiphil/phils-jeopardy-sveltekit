@@ -4,12 +4,12 @@
   <br/>
   <br/>
 
-  **Live spielen: [antiphil.de](https://www.antiphil.de)**
+  **Play live: [antiphil.de](https://www.antiphil.de)**
 
   <br/>
 </div>
 
-Eine selbst gehostete, vollständig anpassbare Jeopardy-App für Spieleabende — gebaut mit SvelteKit, PostgreSQL und Discord-Login.
+A self-hosted, fully customizable Jeopardy app for game nights — built with SvelteKit, PostgreSQL, and Discord login.
 
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-FF3E00?logo=svelte&logoColor=white)
 ![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)
@@ -21,87 +21,87 @@ Eine selbst gehostete, vollständig anpassbare Jeopardy-App für Spieleabende �
 
 ## Features
 
-- **Eigene Spiele erstellen** — 2 Runden mit je 6 Kategorien und bis zu 5 Fragen pro Kategorie, plus optionale Chaos Category
-- **Bilder per URL** — Fragen mit Bild anreichern; Bildquelle wird automatisch als klickbares Domain-Label angezeigt
-- **Spieler & Teams** — Einzelspieler oder Teammodus mit anpassbaren Farben und Avataren
-- **Öffentliche Spiele** — Admins können Spiele für alle Nutzer freigeben
-- **Session-Persistenz** — laufende Spiele werden in der Datenbank gespeichert und können fortgesetzt werden (max. 2 aktive Sessions pro Account)
-- **Spielauswertung** — Podium, Statistiken, Spieler-Details und Konfetti-Animation
-- **Discord OAuth** — Login über Discord, Google-Login vorbereitet
-- **Sound-Feedback** — Klick-, Richtig-, Falsch- und Sieges-Sounds via Web Audio API
-- **Self-Hosting ready** — Docker-Image und Raspberry Pi Support
+- **Create custom games** — 2 rounds with 6 categories each and up to 5 questions per category, plus an optional Chaos Category
+- **Images via URL** — enrich questions with images; the image source is automatically displayed as a clickable domain label
+- **Players & Teams** — solo player or team mode with customizable colors and avatars
+- **Public games** — admins can make games available to all users
+- **Session persistence** — ongoing games are saved to the database and can be resumed (max. 2 active sessions per account)
+- **Game results** — podium, statistics, player details, and confetti animation
+- **Discord OAuth** — login via Discord, Google login prepared
+- **Sound feedback** — click, correct, wrong, and victory sounds via Web Audio API
+- **Self-hosting ready** — Docker image and Raspberry Pi support
 
 ---
 
 ## Tech Stack
 
-| Bereich | Technologie |
+| Area | Technology |
 |---|---|
 | Framework | SvelteKit 2 + Svelte 5 (Runes) |
-| Sprache | TypeScript |
-| Datenbank | PostgreSQL via Drizzle ORM |
+| Language | TypeScript |
+| Database | PostgreSQL via Drizzle ORM |
 | Auth | Auth.js v1 (Discord OAuth) |
 | Styling | Scoped CSS + Tailwind CSS |
 | Deployment | Docker / Node.js Adapter |
 
 ---
 
-## Voraussetzungen
+## Prerequisites
 
 - Node.js 22+
-- PostgreSQL-Datenbank
+- PostgreSQL database
 - Discord OAuth App ([Discord Developer Portal](https://discord.com/developers/applications))
 
 ---
 
-## Einrichtung
+## Setup
 
-### 1. Repository klonen
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/dein-nutzername/phils-jeopardy.git
+git clone https://github.com/your-username/phils-jeopardy.git
 cd phils-jeopardy
 npm install
 ```
 
-### 2. Umgebungsvariablen konfigurieren
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` ausfüllen:
+Fill in `.env`:
 
 ```env
-# Auth.js Secret (mind. 32 Zeichen)
-# Generieren: openssl rand -base64 32
-AUTH_SECRET=HIER_GEHEIMEN_SCHLÜSSEL_EINTRAGEN
+# Auth.js Secret (at least 32 characters)
+# Generate: openssl rand -base64 32
+AUTH_SECRET=ENTER_YOUR_SECRET_KEY_HERE
 
 # Discord OAuth
 AUTH_DISCORD_ID=DISCORD_CLIENT_ID
 AUTH_DISCORD_SECRET=DISCORD_CLIENT_SECRET
 
-# Öffentliche URL (in Produktion erforderlich)
-AUTH_URL=https://deine-domain.de
+# Public URL (required in production)
+AUTH_URL=https://your-domain.com
 
 # PostgreSQL
 DATABASE_URL=postgresql://user:password@localhost:5432/phils_jeopardy
 ```
 
-**Discord OAuth einrichten:**
+**Set up Discord OAuth:**
 1. [Discord Developer Portal](https://discord.com/developers/applications) → *New Application*
-2. OAuth2 → Client ID & Client Secret kopieren
-3. Redirect URI hinzufügen:
-   - Lokal: `http://localhost:5173/auth/callback/discord`
-   - Produktion: `https://deine-domain.de/auth/callback/discord`
+2. OAuth2 → copy Client ID & Client Secret
+3. Add Redirect URI:
+   - Local: `http://localhost:5173/auth/callback/discord`
+   - Production: `https://your-domain.com/auth/callback/discord`
 
-### 3. Datenbank einrichten
+### 3. Set up the database
 
 ```bash
 npm run db:push
 ```
 
-### 4. Entwicklungsserver starten
+### 4. Start the development server
 
 ```bash
 npm run dev
@@ -109,21 +109,21 @@ npm run dev
 
 ---
 
-## Admin-Account
+## Admin Account
 
-Nach dem ersten Login kann ein Account in der Datenbank als Admin gesetzt werden:
+After the first login, an account can be set as admin in the database:
 
 ```sql
-UPDATE users SET is_admin = true WHERE email = 'deine@email.de';
+UPDATE users SET is_admin = true WHERE email = 'your@email.com';
 ```
 
-Admins können Spiele öffentlich schalten, sodass sie für alle Nutzer in der Spielauswahl erscheinen.
+Admins can make games public so they appear for all users in the game selection.
 
 ---
 
-## Deployment mit Docker
+## Deployment with Docker
 
-### Image bauen und starten
+### Build and run the image
 
 ```bash
 docker build -t phils-jeopardy .
@@ -131,12 +131,12 @@ docker run -p 3000:3000 \
   -e AUTH_SECRET=... \
   -e AUTH_DISCORD_ID=... \
   -e AUTH_DISCORD_SECRET=... \
-  -e AUTH_URL=https://deine-domain.de \
+  -e AUTH_URL=https://your-domain.com \
   -e DATABASE_URL=postgresql://... \
   phils-jeopardy
 ```
 
-### Docker Compose (empfohlen)
+### Docker Compose (recommended)
 
 ```yaml
 services:
@@ -168,7 +168,7 @@ volumes:
 
 ---
 
-## Projektstruktur
+## Project Structure
 
 ```
 src/
@@ -177,23 +177,23 @@ src/
 │   │   ├── admin/          # CategoryEditor, QuestionEditor
 │   │   └── comps/          # Navbar, GameSelect, PlayerSetup, QuestionModal, ...
 │   ├── server/
-│   │   ├── db.ts           # Drizzle-Instanz
-│   │   └── schema.ts       # DB-Schema (users, saved_games, game_sessions)
+│   │   ├── db.ts           # Drizzle instance
+│   │   └── schema.ts       # DB schema (users, saved_games, game_sessions)
 │   ├── stores/
-│   │   ├── game.ts         # Spielzustand + Session-Persistenz
-│   │   └── savedGames.ts   # API-backed Store für eigene Spiele
-│   └── sounds.ts           # Web Audio API Sounds
+│   │   ├── game.ts         # Game state + session persistence
+│   │   └── savedGames.ts   # API-backed store for saved games
+│   └── sounds.ts           # Web Audio API sounds
 ├── routes/
-│   ├── api/                # REST-Endpunkte (games, sessions)
-│   ├── game/               # Spielboard
-│   ├── game-config/        # Spielverwaltung (Admin)
-│   ├── winner/             # Auswertung & Statistiken
+│   ├── api/                # REST endpoints (games, sessions)
+│   ├── game/               # Game board
+│   ├── game-config/        # Game management (admin)
+│   ├── winner/             # Results & statistics
 │   └── ...
-└── auth.ts                 # Auth.js Konfiguration
+└── auth.ts                 # Auth.js configuration
 ```
 
 ---
 
-## Lizenz
+## License
 
-Privates Projekt — kein öffentliches Licensing.
+Private project — no public licensing.
