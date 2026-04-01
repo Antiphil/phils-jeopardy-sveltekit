@@ -1,4 +1,3 @@
-- kleiner haken oder kreuz bei den fragen im editor der anzeigt ob die frage valid zur veröffentlichung ist
 - how to play besser ausarbeiten und auch die erklärung das ein gamemaster benannt werden muss das dieser die option hat sich die lösungen anzuzeigen
 - none gamemaster mode wo alle spieler teilnehmen können 
     - auch ein online mode wo spieler übers internet miteinander spielen können
@@ -6,3 +5,5 @@
 - chaos category geben volle pinus punktzahl
 - chaos category umbenennen in spielen die ich erstellt habe (phil wie er will)
 - timer für reguläre fragen im options menü einstellbar machen (timer soll nichts mit dem chaos timer zu tun haben)
+- gameboard runden indikator statt board 1,2,3. (runde 1 von 3)
+- schöneres und kompakteres menü im gameboard. gleiche höhe mit der anzeige welcher spieler dran ist. 
