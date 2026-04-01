@@ -15,7 +15,11 @@
 
 	const isPrimary = $derived(!editingLang || editingLang === langs[0]);
 	const chaosType = $derived(question.chaosType ?? 'question');
-	const isComplete = $derived(!!question.question.trim() && !!question.answer.trim());
+	const isComplete = $derived(
+		chaosType === 'wheel'
+			? true
+			: !!question.question.trim() && !!question.answer.trim()
+	);
 
 	function getQ(): string {
 		if (isPrimary) return question.question;
@@ -71,16 +75,23 @@
 						class="field-input type-select"
 						value={chaosType}
 						onchange={(e) => {
-							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' };
+							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' | 'hangman' };
 						}}
 					>
 						<option value="question">❓ Frage / Aufgabe</option>
 						<option value="wordle">🟩 Wordle</option>
+						<option value="hangman">🪢 Hangman</option>
+						<option value="wheel">🎡 Chaos Wheel</option>
 					</select>
 				</div>
 			{/if}
 
-			{#if chaosType === 'wordle'}
+			{#if chaosType === 'wheel'}
+				<div class="wheel-info">
+					<span class="wheel-info-icon">🎡</span>
+					<span>Das Chaos Wheel dreht sich — kein Text nötig.<br/>Die Effekte werden zufällig bestimmt.</span>
+				</div>
+			{:else if chaosType === 'wordle' || chaosType === 'hangman'}
 				<div class="field">
 					<span class="field-label">Wort zum Erraten</span>
 					<input
@@ -365,6 +376,21 @@
 		text-transform: uppercase;
 		font-size: 1rem;
 	}
+
+	.wheel-info {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		background: rgba(124, 58, 237, 0.08);
+		border: 1px dashed #5b21b6;
+		border-radius: 0.5rem;
+		padding: 0.6rem 0.75rem;
+		font-size: 0.78rem;
+		color: #a78bca;
+		line-height: 1.5;
+	}
+
+	.wheel-info-icon { font-size: 1.1rem; flex-shrink: 0; }
 
 	.wordle-len-hint {
 		font-size: 0.68rem;

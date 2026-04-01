@@ -3,3 +3,6 @@
 - none gamemaster mode wo alle spieler teilnehmen können 
     - auch ein online mode wo spieler übers internet miteinander spielen können
 - game libary user generated
+- chaos category geben volle pinus punktzahl
+- chaos category umbenennen in spielen die ich erstellt habe (phil wie er will)
+- timer für reguläre fragen im options menü einstellbar machen (timer soll nichts mit dem chaos timer zu tun haben)

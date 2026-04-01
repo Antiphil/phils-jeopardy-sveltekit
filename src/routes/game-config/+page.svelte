@@ -10,11 +10,15 @@
 	import type { PageData } from './$types';
 
 	function isQuestionFilled(q: QuestionConfig, langs: string[]): boolean {
-		if (!q.question.trim() || !q.answer.trim()) return false;
+		if (q.chaosType === 'wheel') return true;
+		const wordGuess = q.chaosType === 'wordle' || q.chaosType === 'hangman';
+		if (!wordGuess && !q.question.trim()) return false;
+		if (!q.answer.trim()) return false;
 		if (langs.length > 1) {
 			for (const lang of langs.slice(1)) {
 				const tr = q.translations?.[lang];
-				if (!tr?.question.trim() || !tr?.answer.trim()) return false;
+				if (!wordGuess && !tr?.question.trim()) return false;
+				if (!tr?.answer.trim()) return false;
 			}
 		}
 		return true;

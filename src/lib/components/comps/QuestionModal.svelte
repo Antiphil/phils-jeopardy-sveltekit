@@ -1,51 +1,53 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Question } from '$lib/stores/game';
 	import { playCorrect, playWrong } from '$lib/sounds';
 	import { t } from '$lib/i18n';
 	import Wordle from './Wordle.svelte';
+	import Hangman from './Hangman.svelte';
+	import ChaosWheel from './ChaosWheel.svelte';
+	import type { WheelResult, Scorer as WheelScorer } from './ChaosWheel.svelte';
 
-	let { question, answerer, onclose, onaward, ontimeout }: {
+	let { question, answerer, onclose, onaward, ontimeout, spinnerScorer, otherScorers, onwheelresult }: {
 		question: Question;
 		answerer?: { name: string; avatar: string; color: string };
 		onclose: () => void;
 		onaward: (points: number) => void;
 		ontimeout?: () => void;
+		spinnerScorer?: WheelScorer;
+		otherScorers?: WheelScorer[];
+		onwheelresult?: (result: WheelResult) => void;
 	} = $props();
 
 	// Answer is only revealed after a correct award
 	let answerRevealed = $state(false);
 	let timedOut = $state(false);
 
-	// Timer state
-	const hasTimer = $derived(!!(question.timerEnabled && question.timerSeconds && question.timerSeconds > 0));
+	// Timer — started once on mount, never resets due to reactive state changes
+	const hasTimer = !!(question.timerEnabled && question.timerSeconds && question.timerSeconds > 0);
 	let timeLeft = $state(question.timerSeconds ?? 0);
-	let timerRunning = $state(false);
+	let _stopTimer: (() => void) | null = null;
 
-	$effect(() => {
+	onMount(() => {
 		if (!hasTimer) return;
 
 		timeLeft = question.timerSeconds!;
-		timerRunning = true;
+		let stopped = false;
 
 		const interval = setInterval(() => {
-			if (!timerRunning) { clearInterval(interval); return; }
+			if (stopped) { clearInterval(interval); return; }
 			timeLeft--;
 			if (timeLeft <= 0) {
 				clearInterval(interval);
-				timerRunning = false;
 				timedOut = true;
 				playWrong();
-				// Brief delay so "Zeit abgelaufen!" is visible
-				setTimeout(() => {
-					ontimeout?.();
-				}, 1400);
+				setTimeout(() => ontimeout?.(), 1400);
 			}
 		}, 1000);
 
-		return () => {
-			clearInterval(interval);
-			timerRunning = false;
-		};
+		_stopTimer = () => { stopped = true; clearInterval(interval); };
+
+		return () => { stopped = true; clearInterval(interval); };
 	});
 
 	const timerPercent = $derived(
@@ -56,7 +58,8 @@
 	const timerCritical = $derived(timeLeft <= 10 && !timerUrgent);
 
 	function stopTimer() {
-		timerRunning = false;
+		_stopTimer?.();
+		_stopTimer = null;
 	}
 
 	function handleBackdrop(e: MouseEvent) {
@@ -64,6 +67,8 @@
 	}
 
 	const isWordle = $derived(question.chaosType === 'wordle');
+	const isHangman = $derived(question.chaosType === 'hangman');
+	const isWheel = $derived(question.chaosType === 'wheel');
 
 	function handleAward(points: number) {
 		stopTimer();
@@ -76,13 +81,13 @@
 		}
 	}
 
-	function handleWordleWin() {
+	function handleGameWin() {
 		stopTimer();
 		playCorrect();
 		answerRevealed = true;
 	}
 
-	function handleWordleLose() {
+	function handleGameLose() {
 		stopTimer();
 		playWrong();
 		onaward(0);
@@ -125,22 +130,41 @@
 			</div>
 		{/if}
 
-		{#if isWordle}
+		{#if isWheel}
+			{#if spinnerScorer}
+				<ChaosWheel
+					spinner={spinnerScorer}
+					others={otherScorers ?? []}
+					onresult={(r) => { stopTimer(); onwheelresult?.(r); }}
+				/>
+			{:else}
+				<p style="color:#a78bca;font-size:0.9rem">Kein Spieler ausgewählt.</p>
+			{/if}
+		{:else if isWordle || isHangman}
 			{#if answerRevealed}
 				<div class="answer-box">
-					<div class="answer-label">🟩 Gelöst!</div>
+					<div class="answer-label">{isWordle ? '🟩 Gelöst!' : '🪢 Gelöst!'}</div>
 					<div class="answer-text">{question.answer.toUpperCase()}</div>
 				</div>
 				<button class="btn-reveal" onclick={() => onaward(question.points)}>
 					{$t.questionModal.next}
 				</button>
 			{:else if !timedOut}
-				<Wordle
-					word={question.answer}
-					hint={question.question}
-					onwin={handleWordleWin}
-					onlose={handleWordleLose}
-				/>
+				{#if isWordle}
+					<Wordle
+						word={question.answer}
+						hint={question.question}
+						onwin={handleGameWin}
+						onlose={handleGameLose}
+					/>
+				{:else}
+					<Hangman
+						word={question.answer}
+						hint={question.question}
+						onwin={handleGameWin}
+						onlose={handleGameLose}
+					/>
+				{/if}
 			{/if}
 		{:else}
 			<div class="question-text">{question.question}</div>
@@ -168,7 +192,7 @@
 			{/if}
 		{/if}
 
-		{#if !timedOut}
+		{#if !isWheel && !timedOut}
 			<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
 		{/if}
 	</div>

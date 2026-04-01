@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ChaosType = 'question' | 'wordle';
+export type ChaosType = 'question' | 'wordle' | 'hangman' | 'wheel';
 
 export type QuestionConfig = {
 	id: string;
@@ -92,7 +92,7 @@ function migrateGame(raw: unknown): SavedGame {
 		...game,
 		languages,
 		boardCount: game.boardCount ?? 2,
-		board3: game.board3 ?? makeBoard(3),
+		board3: (game.board3 && game.board3.length > 0) ? game.board3 : makeBoard(3),
 		chaosCategory: {
 			...chaos,
 			id: 'chaos',

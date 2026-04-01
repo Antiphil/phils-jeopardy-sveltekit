@@ -2,6 +2,7 @@
 	import { gameStore } from '$lib/stores/game';
 	import type { Question } from '$lib/stores/game';
 	import QuestionModal from '$lib/components/comps/QuestionModal.svelte';
+	import type { WheelResult } from '$lib/components/comps/ChaosWheel.svelte';
 	import Scoreboard from '$lib/components/comps/Scoreboard.svelte';
 	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n';
@@ -26,16 +27,25 @@
 		: (gs?.board2Categories ?? [])
 	);
 
-	// All scoreable entities (teams or players)
+	// All scoreable entities (teams or players), including current score for the wheel
 	let scorers = $derived(
 		gs?.teams
-			? gs.teams.map((t) => ({ id: t.id, name: t.name, avatar: '👥', color: t.color }))
+			? gs.teams.map((t) => ({ id: t.id, name: t.name, avatar: '👥', color: t.color, score: gs!.scores[t.id] ?? 0 }))
 			: (gs?.players ?? []).map((p) => ({
 					id: p.id,
 					name: p.name,
 					avatar: p.avatar,
-					color: '#a855f7'
+					color: '#a855f7',
+					score: gs!.scores[p.id] ?? 0,
 				}))
+	);
+
+	// Wheel props: who's spinning and who else is playing
+	let spinnerScorer = $derived(
+		currentAnswererId !== null ? (scorers.find((s) => s.id === currentAnswererId) ?? undefined) : undefined
+	);
+	let otherScorers = $derived(
+		currentAnswererId !== null ? scorers.filter((s) => s.id !== currentAnswererId) : []
 	);
 
 	// Scorer ID for whoever's turn it currently is
@@ -129,6 +139,35 @@
 		retryQuestion = null;
 	}
 
+	function handleWheelResult(result: WheelResult) {
+		if (!activeQuestion || currentAnswererId === null) return;
+		// Apply the wheel effect to scores
+		switch (result.segment.id) {
+			case 'double_points':
+			case 'lose_half':
+				if (result.pointsDelta !== undefined) gameStore.addPoints(currentAnswererId, result.pointsDelta);
+				break;
+			case 'swap_random':
+				if (result.swapWith) gameStore.swapScores(currentAnswererId, result.swapWith.id);
+				break;
+			case 'everyone_gains':
+				if (result.everyoneGains) {
+					for (const s of scorers) {
+						if (s.id !== currentAnswererId) gameStore.addPoints(s.id, result.everyoneGains);
+					}
+				}
+				break;
+			case 'skip_turn':
+				gameStore.scheduleSkip(currentAnswererId);
+				break;
+		}
+		// Mark question answered (wheel = chaos, no direct point award)
+		gameStore.markAnswered(activeQuestion.id, -1, 0);
+		activeQuestion = null;
+		currentAnswererId = null;
+		wrongAnswerers = [];
+	}
+
 	function confirmSkip() {
 		if (!retryQuestion) return;
 		gameStore.markAnswered(retryQuestion.id, -1, 0);
@@ -201,6 +240,9 @@
 			onclose={() => (activeQuestion = null)}
 			onaward={handleAward}
 			ontimeout={handleTimeout}
+			{spinnerScorer}
+			{otherScorers}
+			onwheelresult={handleWheelResult}
 		/>
 	{/if}
 
@@ -314,47 +356,52 @@
 
 		<!-- Game board -->
 		<div class="board-wrap">
-			<div class="board-flex">
-				<!-- Main grid: 6 regular categories × 5 questions -->
-				<div class="main-board" style={`grid-template-columns: repeat(${categories.length}, 1fr)`}>
+			<div class="main-board" style={`grid-template-columns: repeat(${categories.length}, 1fr)`}>
+				{#each categories as cat}
+					<div class="cat-header">{cat.name}</div>
+				{/each}
+				{#each [0, 1, 2, 3, 4] as row}
 					{#each categories as cat}
-						<div class="cat-header">{cat.name}</div>
+						{@const q = cat.questions[row]}
+						{@const ts = tileStatus(q.id)}
+						<button
+							class="tile"
+							class:correct={ts === 'correct'}
+							class:missed={ts === 'missed'}
+							class:open={ts === 'open'}
+							disabled={ts !== 'open' || (gs.currentBoard === 2 && !gs.board1Complete) || (gs.currentBoard === 3 && !gs.board2Complete)}
+							onclick={() => openQuestion(q)}
+						>
+							{#if ts === 'correct'}
+								<span class="tile-scorer">
+									{scorerAvatar(gs.answered[q.id]!)}
+									<span class="tile-scorer-name">{scorerName(gs.answered[q.id]!)}</span>
+								</span>
+							{:else if ts === 'missed'}
+								<span class="tile-missed-icon">✗</span>
+							{:else}
+								<span class="tile-points">{q.points}</span>
+							{/if}
+						</button>
 					{/each}
-					{#each [0, 1, 2, 3, 4] as row}
-						{#each categories as cat}
-							{@const q = cat.questions[row]}
-							{@const ts = tileStatus(q.id)}
-							<button
-								class="tile"
-								class:correct={ts === 'correct'}
-								class:missed={ts === 'missed'}
-								class:open={ts === 'open'}
-								disabled={ts !== 'open' || (gs.currentBoard === 2 && !gs.board1Complete) || (gs.currentBoard === 3 && !gs.board2Complete)}
-								onclick={() => openQuestion(q)}
-							>
-								{#if ts === 'correct'}
-									<span class="tile-scorer">
-										{scorerAvatar(gs.answered[q.id]!)}
-										<span class="tile-scorer-name">{scorerName(gs.answered[q.id]!)}</span>
-									</span>
-								{:else if ts === 'missed'}
-									<span class="tile-missed-icon">✗</span>
-								{:else}
-									<span class="tile-points">{q.points}</span>
-								{/if}
-							</button>
-						{/each}
-					{/each}
-				</div>
+				{/each}
+			</div>
+		</div>
 
-				<!-- Chaos Category column: 10 questions, separate -->
-				{#if gs.chaosEnabled}
-				<div class="phil-column">
-					<div class="cat-header phil-header">🎲 {gs.chaosCategory.name}</div>
+		<!-- Chaos Category: full-width row below the board -->
+		{#if gs.chaosEnabled}
+			<div class="chaos-section">
+				<div class="chaos-header">
+					<span class="chaos-dice">🎲</span>
+					<span class="chaos-title">{gs.chaosCategory.name}</span>
+					<span class="chaos-dice">🎲</span>
+				</div>
+				<div class="chaos-row">
 					{#each gs.chaosCategory.questions as philQ}
 						{@const philTs = tileStatus(philQ.id)}
+						{@const typeIcon = philQ.chaosType === 'wordle' ? '🟩' : philQ.chaosType === 'hangman' ? '🪢' : '❓'}
 						<button
-							class="tile phil-tile"
+							class="chaos-tile"
 							class:correct={philTs === 'correct'}
 							class:missed={philTs === 'missed'}
 							class:open={philTs === 'open'}
@@ -362,23 +409,20 @@
 							onclick={() => openQuestion(philQ)}
 						>
 							{#if philTs === 'correct'}
-								<span class="tile-scorer">
-									{scorerAvatar(gs.answered[philQ.id]!)}
-									<span class="tile-scorer-name phil-scorer-name"
-										>{scorerName(gs.answered[philQ.id]!)}</span
-									>
-								</span>
+								<span class="chaos-tile-avatar">{scorerAvatar(gs.answered[philQ.id]!)}</span>
+								<span class="chaos-tile-name">{scorerName(gs.answered[philQ.id]!)}</span>
 							{:else if philTs === 'missed'}
 								<span class="tile-missed-icon">✗</span>
 							{:else}
-								<span class="tile-points phil-points">{philQ.points}</span>
+								<span class="chaos-tile-type">{typeIcon}</span>
+								<span class="chaos-tile-pts">{philQ.points}</span>
+								{#if philQ.timerEnabled}<span class="chaos-timer-badge">⏱</span>{/if}
 							{/if}
 						</button>
 					{/each}
 				</div>
-				{/if}
 			</div>
-		</div>
+		{/if}
 	</div>
 	<Scoreboard />
 {/if}
@@ -496,29 +540,13 @@
 	/* ── Board grid ─────────────────────────────────────── */
 	.board-wrap {
 		overflow-x: auto;
-		flex: 1;
-	}
-
-	.board-flex {
-		display: flex;
-		gap: 8px;
-		min-width: 700px;
-		align-items: stretch;
-		padding: 20px;
 	}
 
 	.main-board {
 		display: grid;
 		gap: 6px;
-		flex: 1;
-	}
-
-	.phil-column {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		width: 110px;
-		flex-shrink: 0;
+		padding: 0 20px;
+		min-width: 600px;
 	}
 
 	.cat-header {
@@ -537,14 +565,6 @@
 		line-height: 1.2;
 		box-shadow: 0 2px 12px rgba(6, 3, 12, 0.25);
 		margin-bottom: 20px;
-	}
-
-	.phil-header {
-		background: linear-gradient(135deg, #7f1d1d, #450a0a);
-		border-color: #ef4444;
-		color: #fca5a5;
-		box-shadow: 0 2px 14px rgba(239, 68, 68, 0.35);
-		font-size: 0.75rem;
 	}
 
 	.tile {
@@ -587,42 +607,119 @@
 		opacity: 0.45;
 	}
 
-	.phil-tile {
-		border-color: #b91c1c;
-		background: linear-gradient(135deg, #450a0a, #1e0d0d);
-		min-height: 0;
-		flex: 1;
+	/* ── Chaos section ──────────────────────────────────── */
+	.chaos-section {
+		margin: 0 20px;
+		border: 1.5px solid #b91c1c;
+		border-radius: 1.25rem;
+		overflow: hidden;
+		box-shadow: 0 4px 24px rgba(239, 68, 68, 0.2);
 	}
 
-	.phil-tile.open:hover:not(:disabled) {
-		box-shadow: 0 6px 22px rgba(239, 68, 68, 0.45);
+	.chaos-header {
 		background: linear-gradient(135deg, #7f1d1d, #450a0a);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6rem;
+		padding: 0.55rem 1rem;
+	}
+
+	.chaos-title {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1rem;
+		color: #fca5a5;
+		letter-spacing: 0.5px;
+	}
+
+	.chaos-dice {
+		font-size: 1rem;
+		animation: spin-slow 4s linear infinite;
+	}
+
+	@keyframes spin-slow {
+		0%   { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+
+	.chaos-row {
+		display: flex;
+		gap: 6px;
+		padding: 10px;
+		overflow-x: auto;
+		background: #1a0808;
+	}
+
+	.chaos-tile {
+		flex: 1;
+		min-width: 72px;
+		min-height: 80px;
+		border-radius: 0.85rem;
+		border: 1.5px solid #b91c1c;
+		background: linear-gradient(160deg, #3b0a0a, #1e0505);
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.2rem;
+		position: relative;
+		transition: transform 0.12s, box-shadow 0.12s, background 0.15s;
+		padding: 0.5rem 0.3rem;
+	}
+
+	.chaos-tile.open:hover:not(:disabled) {
+		transform: translateY(-4px) scale(1.04);
+		box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
+		background: linear-gradient(160deg, #7f1d1d, #450a0a);
 		border-color: #ef4444;
 	}
 
-	.phil-tile.correct {
+	.chaos-tile:disabled { cursor: default; }
+
+	.chaos-tile.correct {
 		background: linear-gradient(135deg, #052e16, #0a1f14);
 		border-color: #34d399;
+		opacity: 0.75;
 	}
 
-	.phil-tile.missed {
-		background: linear-gradient(135deg, #1c0505, #1a0d0d);
-		border-color: #7f1d1d;
+	.chaos-tile.missed {
+		background: linear-gradient(135deg, #1c0505, #150303);
+		border-color: #450a0a;
+		opacity: 0.4;
 	}
 
-	.phil-points {
-		color: #fca5a5;
+	.chaos-tile-type {
+		font-size: 1.1rem;
+	}
+
+	.chaos-tile-pts {
+		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
+		color: #fca5a5;
 	}
 
-	.phil-scorer-name {
+	.chaos-timer-badge {
+		position: absolute;
+		top: 4px;
+		right: 5px;
+		font-size: 0.65rem;
+		opacity: 0.7;
+	}
+
+	.chaos-tile-avatar {
+		font-size: 1.2rem;
+	}
+
+	.chaos-tile-name {
 		font-size: 0.6rem;
 		color: #34d399;
 		font-weight: 700;
+		text-align: center;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: 80px;
+		max-width: 68px;
 	}
 
 	.tile-points {

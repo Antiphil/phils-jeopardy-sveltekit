@@ -32,6 +32,7 @@
 	.tooltip-wrap {
 		position: relative;
 		display: inline-flex;
+		margin-bottom: 3px;
 	}
 
 	/* Anchor handles positioning only — no transform conflict with animation */

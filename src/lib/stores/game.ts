@@ -19,7 +19,7 @@ export type Question = {
 	image?: string;
 	timerEnabled?: boolean;
 	timerSeconds?: number;
-	chaosType?: 'question' | 'wordle';
+	chaosType?: 'question' | 'wordle' | 'hangman' | 'wheel';
 };
 
 export type Category = {
@@ -47,6 +47,7 @@ export type GameState = {
 	chaosCategory: Category;
 	chaosEnabled: boolean;
 	currentTurnIndex: number;
+	pendingSkips: number[];
 	savedGameId?: string;
 	isPublicGame?: boolean;
 };
@@ -111,6 +112,7 @@ function createGameStore() {
 				chaosCategory: (savedGame?.chaosCategory as Category) ?? { id: 'chaos', name: 'Chaos Category', questions: [] },
 				chaosEnabled: savedGame?.chaosEnabled ?? false,
 				currentTurnIndex: 0,
+				pendingSkips: [],
 				savedGameId: savedGame?.id,
 				isPublicGame: savedGame?.isPublic ?? false,
 			};
@@ -139,15 +141,47 @@ function createGameStore() {
 		markAnswered(questionId: string, scorerId: number, points: number) {
 			updateState((state) => {
 				const answered = { ...state.answered, [questionId]: scorerId };
-				const scores = { ...state.scores, [scorerId]: (state.scores[scorerId] ?? 0) + points };
+				// Only update scores for real scorers (not -1 = missed)
+				const scores = scorerId >= 0
+					? { ...state.scores, [scorerId]: (state.scores[scorerId] ?? 0) + points }
+					: state.scores;
 				const board1Ids = state.board1Categories.flatMap((c) => c.questions.map((q) => q.id));
 				const board2Ids = state.board2Categories.flatMap((c) => c.questions.map((q) => q.id));
 				const board1Complete = board1Ids.every((id) => answered[id] !== undefined);
 				const board2Complete = board2Ids.every((id) => answered[id] !== undefined);
 				const turnCount = state.teams ? state.teams.length : state.players.length;
-				const currentTurnIndex = (state.currentTurnIndex + 1) % turnCount;
-				return { ...state, answered, scores, board1Complete, board2Complete, currentTurnIndex };
+				// Advance turn, skipping any player with a pending skip
+				let nextIndex = (state.currentTurnIndex + 1) % turnCount;
+				const pendingSkips = [...(state.pendingSkips ?? [])];
+				const nextId = state.teams ? state.teams[nextIndex]?.id : state.players[nextIndex]?.id;
+				if (nextId !== undefined && pendingSkips.includes(nextId)) {
+					pendingSkips.splice(pendingSkips.indexOf(nextId), 1);
+					nextIndex = (nextIndex + 1) % turnCount;
+				}
+				return { ...state, answered, scores, board1Complete, board2Complete, currentTurnIndex: nextIndex, pendingSkips };
 			});
+		},
+
+		addPoints(scorerId: number, points: number) {
+			updateState((state) => ({
+				...state,
+				scores: { ...state.scores, [scorerId]: (state.scores[scorerId] ?? 0) + points },
+			}));
+		},
+
+		swapScores(id1: number, id2: number) {
+			updateState((state) => {
+				const s1 = state.scores[id1] ?? 0;
+				const s2 = state.scores[id2] ?? 0;
+				return { ...state, scores: { ...state.scores, [id1]: s2, [id2]: s1 } };
+			});
+		},
+
+		scheduleSkip(scorerId: number) {
+			updateState((state) => ({
+				...state,
+				pendingSkips: [...(state.pendingSkips ?? []), scorerId],
+			}));
 		},
 
 		deductPoints(scorerId: number, points: number, questionId?: string) {
