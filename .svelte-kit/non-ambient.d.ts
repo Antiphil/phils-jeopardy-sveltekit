@@ -29,10 +29,11 @@ declare module "$app/types" {
 	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 
 	export interface AppTypes {
-		RouteId(): "/" | "/api" | "/api/games" | "/api/games/public" | "/api/games/[id]" | "/api/games/[id]/publish" | "/api/sessions" | "/api/sessions/[id]" | "/game-config" | "/game" | "/how-to-play" | "/privacy" | "/signin" | "/signout" | "/solutions" | "/terms" | "/winner";
+		RouteId(): "/" | "/api" | "/api/games" | "/api/games/public" | "/api/games/[id]" | "/api/games/[id]/publish" | "/api/games/[id]/rate" | "/api/sessions" | "/api/sessions/[id]" | "/game-config" | "/game" | "/how-to-play" | "/privacy" | "/signin" | "/signout" | "/solutions" | "/terms" | "/winner";
 		RouteParams(): {
 			"/api/games/[id]": { id: string };
 			"/api/games/[id]/publish": { id: string };
+			"/api/games/[id]/rate": { id: string };
 			"/api/sessions/[id]": { id: string }
 		};
 		LayoutParams(): {
@@ -42,6 +43,7 @@ declare module "$app/types" {
 			"/api/games/public": Record<string, never>;
 			"/api/games/[id]": { id: string };
 			"/api/games/[id]/publish": { id: string };
+			"/api/games/[id]/rate": { id: string };
 			"/api/sessions": { id?: string };
 			"/api/sessions/[id]": { id: string };
 			"/game-config": Record<string, never>;
@@ -54,7 +56,7 @@ declare module "$app/types" {
 			"/terms": Record<string, never>;
 			"/winner": Record<string, never>
 		};
-		Pathname(): "/" | "/api/games" | "/api/games/public" | `/api/games/${string}` & {} | `/api/games/${string}/publish` & {} | "/api/sessions" | `/api/sessions/${string}` & {} | "/game-config" | "/game" | "/how-to-play" | "/privacy" | "/signin" | "/signout" | "/solutions" | "/terms" | "/winner";
+		Pathname(): "/" | "/api/games" | "/api/games/public" | `/api/games/${string}` & {} | `/api/games/${string}/publish` & {} | `/api/games/${string}/rate` & {} | "/api/sessions" | `/api/sessions/${string}` & {} | "/game-config" | "/game" | "/how-to-play" | "/privacy" | "/signin" | "/signout" | "/solutions" | "/terms" | "/winner";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/robots.txt" | string & {};
 	}

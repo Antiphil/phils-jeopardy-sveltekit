@@ -41,6 +41,8 @@ export type GameState = {
 	chaosCategory: Category;
 	chaosEnabled: boolean;
 	currentTurnIndex: number;
+	savedGameId?: string;
+	isPublicGame?: boolean;
 };
 
 function schedulePersist(state: GameState) {
@@ -100,6 +102,8 @@ function createGameStore() {
 				chaosCategory: (savedGame?.chaosCategory as Category) ?? { id: 'chaos', name: 'Chaos Category', questions: [] },
 				chaosEnabled: savedGame?.chaosEnabled ?? false,
 				currentTurnIndex: 0,
+				savedGameId: savedGame?.id,
+				isPublicGame: savedGame?.isPublic ?? false,
 			};
 
 			if (browser && _gameUserId) {

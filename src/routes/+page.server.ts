@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { gameSessions, savedGames } from '$lib/server/schema';
-import { eq, desc } from 'drizzle-orm';
+import { gameSessions, savedGames, gameRatings } from '$lib/server/schema';
+import { eq, desc, avg, count } from 'drizzle-orm';
 import type { GameState } from '$lib/stores/game';
 import type { CategoryConfig, SavedGame } from '$lib/stores/savedGames';
 
@@ -14,6 +14,13 @@ export const load: PageServerLoad = async (event) => {
 		.where(eq(savedGames.isPublic, true))
 		.orderBy(desc(savedGames.updatedAt));
 
+	const ratingRows = await db
+		.select({ gameId: gameRatings.gameId, avg: avg(gameRatings.rating), count: count() })
+		.from(gameRatings)
+		.groupBy(gameRatings.gameId);
+
+	const ratingMap = Object.fromEntries(ratingRows.map((r) => [r.gameId, { avg: Number(r.avg), count: r.count }]));
+
 	const publicGames: SavedGame[] = publicRows.map((row) => ({
 		id: row.id,
 		name: row.name,
@@ -25,6 +32,8 @@ export const load: PageServerLoad = async (event) => {
 		isPublic: row.isPublic,
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
+		avgRating: ratingMap[row.id]?.avg,
+		ratingCount: ratingMap[row.id]?.count,
 	}));
 
 	if (!session?.user?.id) return { gameSessions: [], publicGames };

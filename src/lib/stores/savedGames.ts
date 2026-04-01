@@ -26,6 +26,8 @@ export type SavedGame = {
 	chaosCategory: CategoryConfig;
 	chaosEnabled: boolean;
 	isPublic: boolean;
+	avgRating?: number; // only present for public games
+	ratingCount?: number;
 };
 
 function makeBoard(board: 1 | 2): CategoryConfig[] {

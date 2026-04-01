@@ -69,8 +69,11 @@
 					>
 						<div class="game-card-icon">🏆</div>
 						<div class="game-card-info">
-							<span class="game-card-name">{game.name}{#if game.language} <span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}</span>
-							
+							<div class="game-card-name-row">
+								<span class="game-card-name">{game.name}</span>
+								{#if game.language}<span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}
+								{#if game.avgRating !== undefined}<span class="game-rating">⭐ {game.avgRating.toFixed(1)}</span>{/if}
+							</div>
 							<div class="game-card-cats">
 								{#each game.board1.slice(0, 4) as cat}
 									<span class="cat-pill">{cat.name}</span>
@@ -294,6 +297,8 @@
 		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
 		color: #f3e8ff;
+		display: flex;
+  gap: 5px;
 	}
 
 	.game-lang {
@@ -301,9 +306,24 @@
 		vertical-align: middle;
 	}
 
-	.game-card-meta {
-		font-size: 0.72rem;
-		color: #7c5faa;
+
+
+	.game-card-name-row {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-wrap: wrap;
+	}
+
+	.game-rating {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #fbbf24;
+	}
+
+	.rating-count {
+		color: #a16207;
+		font-weight: 600;
 	}
 
 	.game-card-cats {

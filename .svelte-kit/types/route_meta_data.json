@@ -16,6 +16,9 @@
 	"/api/games/[id]/publish": [
 		"src/routes/api/games/[id]/publish/+server.ts"
 	],
+	"/api/games/[id]/rate": [
+		"src/routes/api/games/[id]/rate/+server.ts"
+	],
 	"/api/sessions": [
 		"src/routes/api/sessions/+server.ts"
 	],

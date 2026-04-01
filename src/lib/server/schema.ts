@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, jsonb, timestamp, integer } from 'drizzle-orm/pg-core';
 export const users = pgTable('users', {
 	id: text('id').primaryKey(),
 	name: text('name'),
@@ -20,6 +20,13 @@ export const savedGames = pgTable('saved_games', {
 	isPublic: boolean('is_public').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const gameRatings = pgTable('game_ratings', {
+	id: text('id').primaryKey(),
+	gameId: text('game_id').notNull().references(() => savedGames.id, { onDelete: 'cascade' }),
+	rating: integer('rating').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const gameSessions = pgTable('game_sessions', {

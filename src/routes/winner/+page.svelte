@@ -123,6 +123,22 @@
 		return () => clearTimeout(t);
 	});
 
+	// Rating
+	let hoverRating = $state(0);
+	let submittedRating = $state(0);
+	let ratingDone = $state(false);
+
+	async function submitRating(stars: number) {
+		if (ratingDone || !gs?.savedGameId) return;
+		submittedRating = stars;
+		ratingDone = true;
+		await fetch(`/api/games/${gs.savedGameId}/rate`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ rating: stars }),
+		});
+	}
+
 	$effect(() => {
 		if (gs) playWinnerFanfare();
 	});
@@ -279,6 +295,28 @@
 			</tbody>
 		</table>
 	</div>
+
+	{#if gs?.isPublicGame && gs?.savedGameId}
+		<div class="rating-section">
+			<h2 class="section-title">Runde bewerten</h2>
+			<div class="stars">
+				{#each [1,2,3,4,5] as star}
+					<button
+						class="star"
+						class:filled={star <= (ratingDone ? submittedRating : hoverRating)}
+						class:done={ratingDone}
+						onmouseenter={() => { if (!ratingDone) hoverRating = star; }}
+						onmouseleave={() => { if (!ratingDone) hoverRating = 0; }}
+						onclick={() => submitRating(star)}
+						aria-label="{star} Sterne"
+					>★</button>
+				{/each}
+			</div>
+			{#if ratingDone}
+				<p class="rating-thanks">Danke für deine Bewertung!</p>
+			{/if}
+		</div>
+	{/if}
 
 	<div class="actions">
 		<button
@@ -674,5 +712,40 @@
 	.btn-home:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 6px 24px rgba(217, 70, 239, 0.5);
+	}
+
+	/* ── Rating ─────────────────────────────────────────── */
+	.rating-section {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.stars {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	.star {
+		font-size: 2.8rem;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: #3d1a6e;
+		transition: color 0.1s, transform 0.1s;
+		line-height: 1;
+		padding: 0;
+	}
+
+	.star.filled { color: #fbbf24; }
+	.star:not(.done):hover { transform: scale(1.15); }
+	.star.done { cursor: default; }
+
+	.rating-thanks {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1rem;
+		color: #34d399;
+		margin: 0;
 	}
 </style>
