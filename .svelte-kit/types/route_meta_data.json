@@ -46,6 +46,9 @@
 		"src/routes/signout/+page.server.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/sitemap.xml": [
+		"src/routes/sitemap.xml/+server.ts"
+	],
 	"/solutions": [
 		"src/routes/+layout.server.ts"
 	],

@@ -144,7 +144,10 @@
 	});
 </script>
 
-<svelte:head><title>Gewinner – Jeopardy</title></svelte:head>
+<svelte:head>
+	<title>Spielende – Phil's Jeopardy</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
 
 {#if showConfetti}
 	<div class="confetti-wrap" aria-hidden="true">

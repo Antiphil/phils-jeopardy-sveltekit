@@ -22,7 +22,8 @@
 </script>
 
 <svelte:head>
-	<title>Lösungen – Jeopardy</title>
+	<title>Lösungen – Phil's Jeopardy</title>
+	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="solutions-page">

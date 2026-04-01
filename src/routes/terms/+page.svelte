@@ -9,7 +9,10 @@
 	// ═══════════════════════════════════════════════════════
 </script>
 
-<svelte:head><title>Nutzungsbedingungen – {WEBSITE_NAME}</title></svelte:head>
+<svelte:head>
+	<title>Nutzungsbedingungen – {WEBSITE_NAME}</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
 
 <div class="legal-page">
 	<a href="/" class="back-link">← Zurück zur Startseite</a>

@@ -11,7 +11,12 @@
 	];
 </script>
 
-<svelte:head><title>How to Play – Jeopardy</title></svelte:head>
+<svelte:head>
+	<title>Spielanleitung – Phil's Jeopardy</title>
+	<meta name="description" content="Lerne wie Phil's Jeopardy funktioniert: Spielregeln, Gamemaster-Modus, Chaos Category und mehr." />
+	<meta property="og:title" content="Spielanleitung – Phil's Jeopardy" />
+	<meta property="og:description" content="Lerne wie Phil's Jeopardy funktioniert: Spielregeln, Gamemaster-Modus, Chaos Category und mehr." />
+</svelte:head>
 
 <div class="page">
 

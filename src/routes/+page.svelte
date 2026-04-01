@@ -78,6 +78,13 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Phil's Jeopardy – Spiele mit Freunden</title>
+	<meta name="description" content="Starte eine Jeopardy-Runde mit deinen Freunden. Wähle ein Spiel, lege Spieler oder Teams fest und los geht's!" />
+	<meta property="og:title" content="Phil's Jeopardy – Spiele mit Freunden" />
+	<meta property="og:description" content="Starte eine Jeopardy-Runde mit deinen Freunden. Wähle ein Spiel, lege Spieler oder Teams fest und los geht's!" />
+</svelte:head>
+
 {#if step === 'players'}
 	<PlayerSetup onclose={() => (step = 'closed')} onstart={onPlayersReady} />
 {:else if step === 'game'}

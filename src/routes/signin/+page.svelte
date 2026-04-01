@@ -2,6 +2,11 @@
 	import { enhance } from '$app/forms';
 </script>
 
+<svelte:head>
+	<title>Anmelden – Phil's Jeopardy</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="signin-page">
 	<div class="signin-card">
 		<div class="card-header">

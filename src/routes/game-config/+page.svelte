@@ -40,6 +40,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Spiele verwalten – Phil's Jeopardy</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="admin-layout">
 
 	<!-- Sidebar -->

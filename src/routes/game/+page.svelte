@@ -167,6 +167,11 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Spiel läuft – Phil's Jeopardy</title>
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 {#if !gs}
 	<div
 		style="display:flex;align-items:center;justify-content:center;height:80vh;color:#a78bca;font-family:'Fredoka One',cursive;font-size:1.5rem"
