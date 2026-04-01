@@ -21,7 +21,9 @@
 	let showSkipAnswer = $state(false);
 
 	let categories = $derived(
-		gs?.currentBoard === 1 ? (gs?.board1Categories ?? []) : (gs?.board2Categories ?? [])
+		gs?.currentBoard === 1 ? (gs?.board1Categories ?? [])
+		: gs?.currentBoard === 3 ? (gs?.board3Categories ?? [])
+		: (gs?.board2Categories ?? [])
 	);
 
 	// All scoreable entities (teams or players)
@@ -117,6 +119,16 @@
 		showSkipAnswer = true;
 	}
 
+	function handleTimeout() {
+		if (!activeQuestion) return;
+		// Timer expired: auto-mark as missed, no retries
+		gameStore.markAnswered(activeQuestion.id, -1, 0);
+		activeQuestion = null;
+		currentAnswererId = null;
+		wrongAnswerers = [];
+		retryQuestion = null;
+	}
+
 	function confirmSkip() {
 		if (!retryQuestion) return;
 		gameStore.markAnswered(retryQuestion.id, -1, 0);
@@ -156,8 +168,10 @@
 		localStorage.setItem(
 			'jeopardy_solutions_data',
 			JSON.stringify({
+				boardCount: gs.boardCount,
 				board1: gs.board1Categories,
 				board2: gs.board2Categories,
+				board3: gs.board3Categories,
 				chaosCategory: gs.chaosCategory,
 				chaosEnabled: gs.chaosEnabled
 			})
@@ -186,6 +200,7 @@
 			answerer={answererEntry ?? undefined}
 			onclose={() => (activeQuestion = null)}
 			onaward={handleAward}
+			ontimeout={handleTimeout}
 		/>
 	{/if}
 
@@ -262,6 +277,18 @@
 				{$t.game.round2}
 				{#if !gs.board1Complete}<span class="lock-icon">🔒</span>{/if}
 			</button>
+			{#if gs.boardCount >= 3}
+				<button
+					class="board-tab board-tab-3"
+					class:active={gs.currentBoard === 3}
+					onclick={() => gameStore.switchBoard(3)}
+					title={!gs.board2Complete ? 'Runde 2 muss zuerst abgeschlossen werden' : ''}
+				>
+					Runde 3
+					{#if gs.board2Complete && !gs.board3Categories.flatMap(c => c.questions).every(q => gs.answered[q.id] !== undefined)}<span class=""></span>{/if}
+					{#if !gs.board2Complete}<span class="lock-icon">🔒</span>{/if}
+				</button>
+			{/if}
 			<button
 				class="board-tab solutions-btn"
 				onclick={openSolutions}
@@ -279,9 +306,10 @@
 		</div>
 
 		{#if gs.currentBoard === 2 && !gs.board1Complete}
-			<div class="locked-banner">
-				{$t.game.lockedBanner}
-			</div>
+			<div class="locked-banner">{$t.game.lockedBanner}</div>
+		{/if}
+		{#if gs.currentBoard === 3 && !gs.board2Complete}
+			<div class="locked-banner">Runde 2 muss erst vollständig beantwortet werden.</div>
 		{/if}
 
 		<!-- Game board -->
@@ -301,7 +329,7 @@
 								class:correct={ts === 'correct'}
 								class:missed={ts === 'missed'}
 								class:open={ts === 'open'}
-								disabled={ts !== 'open' || (gs.currentBoard === 2 && !gs.board1Complete)}
+								disabled={ts !== 'open' || (gs.currentBoard === 2 && !gs.board1Complete) || (gs.currentBoard === 3 && !gs.board2Complete)}
 								onclick={() => openQuestion(q)}
 							>
 								{#if ts === 'correct'}
@@ -754,6 +782,10 @@
 			transform: translateY(0);
 		}
 	}
+
+	.board-tab-3 { border-color: #7c2d12; color: #fb923c; }
+	.board-tab-3:hover { border-color: #ea580c; color: #fdba74; }
+	.board-tab-3.active { background: linear-gradient(135deg, #ea580c, #f97316); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(234,88,12,0.4); }
 
 	.end-btn {
 		border-color: #854d0e;

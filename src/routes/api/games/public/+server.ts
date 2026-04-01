@@ -16,9 +16,11 @@ export const GET: RequestHandler = async () => {
 		rows.map((row): SavedGame => ({
 			id: row.id,
 			name: row.name,
-			language: row.language ?? undefined,
+			languages: (row.languages as string[] | null) ?? (row.language ? [row.language] : undefined),
+			boardCount: (row.boardCount ?? 2) as 1 | 2 | 3,
 			board1: row.board1 as CategoryConfig[],
 			board2: row.board2 as CategoryConfig[],
+			board3: (row.board3 as CategoryConfig[]) ?? [],
 			chaosCategory: row.chaosCategory as CategoryConfig,
 			chaosEnabled: row.chaosEnabled,
 			isPublic: row.isPublic,

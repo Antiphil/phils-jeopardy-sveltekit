@@ -4,22 +4,26 @@
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import type { Player, Team } from '$lib/stores/game';
 
-	let { players, teams, publicGames = [], loggedIn = false, onback, onstart }: {
+	let { players, teams, publicGames = [], loggedIn = false, demoGame = undefined, onback, onstart }: {
 		players: Player[];
 		teams: Team[] | null;
 		publicGames?: SavedGame[];
 		loggedIn?: boolean;
+		demoGame?: SavedGame;
 		onback: () => void;
 		onstart: (game: SavedGame | null) => void;
 	} = $props();
 
-	const filteredPublicGames = $derived(publicGames.filter((g) => !g.language || g.language === $locale));
+	const filteredPublicGames = $derived(publicGames.filter((g) => !g.languages?.length || g.languages.includes($locale)));
 	const publicIds = $derived(new Set(filteredPublicGames.map((g) => g.id)));
 	let games = $derived($savedGamesStore.filter((g) => !publicIds.has(g.id)));
 	let selectedId: string | null = $state(null);
 
 	let selectedGame = $derived(
-		games.find(g => g.id === selectedId) ?? filteredPublicGames.find(g => g.id === selectedId) ?? null
+		(demoGame && selectedId === demoGame.id ? demoGame : null)
+		?? games.find(g => g.id === selectedId)
+		?? filteredPublicGames.find(g => g.id === selectedId)
+		?? null
 	);
 
 	function handleBackdrop(e: MouseEvent) {
@@ -59,6 +63,32 @@
 		<!-- Game cards -->
 		<div class="games-list">
 
+			{#if demoGame}
+				<div class="section-divider demo-divider">✨ Demo</div>
+				<button
+					class="game-card game-card-demo"
+					class:selected={selectedId === demoGame.id}
+					onclick={() => selectedId = demoGame!.id}
+				>
+					<div class="game-card-icon demo-icon">🎮</div>
+					<div class="game-card-info">
+						<div class="game-card-name-row">
+							<span class="game-card-name demo-name">{demoGame.name}</span>
+							{#each demoGame.languages ?? [] as lang}<span class="game-lang">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
+						</div>
+						<div class="game-card-cats">
+							{#each demoGame.board1.slice(0, 4) as cat}
+								<span class="cat-pill demo-pill">{cat.name}</span>
+							{/each}
+							<span class="cat-pill demo-pill">{demoGame.boardCount} Runden · Chaos</span>
+						</div>
+					</div>
+					{#if selectedId === demoGame.id}
+						<span class="check demo-check">✓</span>
+					{/if}
+				</button>
+			{/if}
+
 			{#if filteredPublicGames.length > 0}
 				<div class="section-divider">{$t.gameSelect.officialGames}</div>
 				{#each filteredPublicGames as game (game.id)}
@@ -71,7 +101,7 @@
 						<div class="game-card-info">
 							<div class="game-card-name-row">
 								<span class="game-card-name">{game.name}</span>
-								{#if game.language}<span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}
+								{#each game.languages ?? [] as lang}<span class="game-lang">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
 								{#if game.avgRating !== undefined}<span class="game-rating">⭐ {game.avgRating.toFixed(1)}</span>{/if}
 							</div>
 							<div class="game-card-cats">
@@ -113,7 +143,10 @@
 					>
 						<div class="game-card-icon">🗂️</div>
 						<div class="game-card-info">
-							<span class="game-card-name">{game.name}{#if game.language} <span class="game-lang">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}</span>
+							<div class="game-card-name-row">
+								<span class="game-card-name">{game.name}</span>
+								{#each game.languages ?? [] as lang}<span class="game-lang">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
+							</div>
 
 							<div class="game-card-cats">
 								{#each game.board1.slice(0, 4) as cat}
@@ -395,6 +428,37 @@
 		background: #1e1609;
 		box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
 	}
+
+	.demo-divider { color: #0891b2; }
+
+	.game-card-demo {
+		border-color: #0e749060;
+		background: #00111a;
+		box-shadow: 0 0 12px rgba(6, 182, 212, 0.08);
+	}
+
+	.game-card-demo:hover {
+		border-color: #0891b2;
+		background: #001e2a;
+	}
+
+	.game-card-demo.selected {
+		border-color: #22d3ee;
+		background: #002030;
+		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+	}
+
+	.demo-icon { background: #012030; }
+
+	.demo-name { color: #67e8f9; }
+
+	.demo-pill {
+		background: rgba(6, 182, 212, 0.08);
+		border-color: #0e749050;
+		color: #0891b2;
+	}
+
+	.demo-check { color: #22d3ee; }
 
 	.modal-footer {
 		display: flex;

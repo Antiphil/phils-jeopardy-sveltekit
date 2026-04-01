@@ -3,21 +3,67 @@
 	import { playCorrect, playWrong } from '$lib/sounds';
 	import { t } from '$lib/i18n';
 
-	let { question, answerer, onclose, onaward }: {
+	let { question, answerer, onclose, onaward, ontimeout }: {
 		question: Question;
 		answerer?: { name: string; avatar: string; color: string };
 		onclose: () => void;
 		onaward: (points: number) => void;
+		ontimeout?: () => void;
 	} = $props();
 
 	// Answer is only revealed after a correct award
 	let answerRevealed = $state(false);
+	let timedOut = $state(false);
+
+	// Timer state
+	const hasTimer = $derived(!!(question.timerEnabled && question.timerSeconds && question.timerSeconds > 0));
+	let timeLeft = $state(question.timerSeconds ?? 0);
+	let timerRunning = $state(false);
+
+	$effect(() => {
+		if (!hasTimer) return;
+
+		timeLeft = question.timerSeconds!;
+		timerRunning = true;
+
+		const interval = setInterval(() => {
+			if (!timerRunning) { clearInterval(interval); return; }
+			timeLeft--;
+			if (timeLeft <= 0) {
+				clearInterval(interval);
+				timerRunning = false;
+				timedOut = true;
+				playWrong();
+				// Brief delay so "Zeit abgelaufen!" is visible
+				setTimeout(() => {
+					ontimeout?.();
+				}, 1400);
+			}
+		}, 1000);
+
+		return () => {
+			clearInterval(interval);
+			timerRunning = false;
+		};
+	});
+
+	const timerPercent = $derived(
+		hasTimer && question.timerSeconds ? Math.max(0, timeLeft / question.timerSeconds) * 100 : 100
+	);
+
+	const timerUrgent = $derived(timeLeft <= 5 && timeLeft > 0);
+	const timerCritical = $derived(timeLeft <= 10 && !timerUrgent);
+
+	function stopTimer() {
+		timerRunning = false;
+	}
 
 	function handleBackdrop(e: MouseEvent) {
-		if (e.target === e.currentTarget && !answerRevealed) onclose();
+		if (e.target === e.currentTarget && !answerRevealed && !timedOut) onclose();
 	}
 
 	function handleAward(points: number) {
+		stopTimer();
 		if (points > 0) {
 			playCorrect();
 			answerRevealed = true;
@@ -33,6 +79,19 @@
 
 		<div class="points-badge">{question.points > 0 ? `${question.points} ${$t.questionModal.points}` : '🎲 Chaos Category'}</div>
 
+		{#if hasTimer && !timedOut}
+			<div class="timer-bar-wrap" class:urgent={timerUrgent} class:critical={timerCritical}>
+				<div class="timer-bar-bg">
+					<div class="timer-bar-fill" style={`width: ${timerPercent}%`}></div>
+				</div>
+				<span class="timer-count" class:urgent={timerUrgent}>{timeLeft}s</span>
+			</div>
+		{/if}
+
+		{#if timedOut}
+			<div class="timeout-banner">⏰ Zeit abgelaufen!</div>
+		{/if}
+
 		{#if answerer}
 			<div class="answerer-row">
 				<span class="answerer-avatar">{answerer.avatar}</span>
@@ -42,7 +101,7 @@
 		{/if}
 
 		{#if question.image}
-			{@const domain = (() => { try { return new URL(question.image).hostname.replace(/^www\./, ''); } catch { return null; } })()}
+			{@const domain = (() => { try { return new URL(question.image!).hostname.replace(/^www\./, ''); } catch { return null; } })()}
 			<div class="image-wrap">
 				<img class="question-image" src={question.image} alt="Fragenbild" />
 				{#if domain}
@@ -61,7 +120,7 @@
 			<button class="btn-reveal" onclick={() => onaward(question.points)}>
 				{$t.questionModal.next}
 			</button>
-		{:else}
+		{:else if !timedOut}
 			<div class="award-row">
 				<span class="award-label">{$t.questionModal.correctOrWrong}</span>
 				<div class="award-btns">
@@ -75,7 +134,9 @@
 			</div>
 		{/if}
 
-		<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
+		{#if !timedOut}
+			<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
+		{/if}
 	</div>
 </div>
 
@@ -110,6 +171,84 @@
 		text-align: center;
 	}
 
+	/* ── Timer bar ─────────────────────────────── */
+	.timer-bar-wrap {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.timer-bar-bg {
+		flex: 1;
+		height: 8px;
+		background: #2a1050;
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	.timer-bar-fill {
+		height: 100%;
+		background: linear-gradient(90deg, #22d3ee, #a855f7);
+		border-radius: 999px;
+		transition: width 1s linear, background 0.3s;
+	}
+
+	.timer-bar-wrap.critical .timer-bar-fill {
+		background: linear-gradient(90deg, #fbbf24, #f97316);
+	}
+
+	.timer-bar-wrap.urgent .timer-bar-fill {
+		background: linear-gradient(90deg, #ef4444, #dc2626);
+		animation: pulse-bar 0.5s ease-in-out infinite alternate;
+	}
+
+	@keyframes pulse-bar {
+		from { opacity: 0.7; }
+		to   { opacity: 1; }
+	}
+
+	.timer-count {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1.1rem;
+		color: #a78bca;
+		min-width: 36px;
+		text-align: right;
+		transition: color 0.3s;
+	}
+
+	.timer-count.urgent {
+		color: #ef4444;
+		animation: pulse-count 0.4s ease-in-out infinite alternate;
+	}
+
+	@keyframes pulse-count {
+		from { transform: scale(1); }
+		to   { transform: scale(1.15); }
+	}
+
+	/* ── Timeout banner ────────────────────────── */
+	.timeout-banner {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1.6rem;
+		color: #ef4444;
+		background: rgba(239, 68, 68, 0.1);
+		border: 2px solid #ef4444;
+		border-radius: 1rem;
+		padding: 0.5rem 1.5rem;
+		animation: shake 0.4s ease-out;
+	}
+
+	@keyframes shake {
+		0%   { transform: translateX(0); }
+		20%  { transform: translateX(-6px); }
+		40%  { transform: translateX(6px); }
+		60%  { transform: translateX(-4px); }
+		80%  { transform: translateX(4px); }
+		100% { transform: translateX(0); }
+	}
+
+	/* ── Rest (unchanged) ──────────────────────── */
 	.answerer-row {
 		display: flex;
 		align-items: center;

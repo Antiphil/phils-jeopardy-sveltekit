@@ -148,6 +148,8 @@ const translations = {
 			questionPlaceholder: 'Frage eingeben…',
 			answerPlaceholder: 'Antwort eingeben…',
 			imagePlaceholder: 'https://beispiel.de/bild.jpg',
+			primary: 'Primär',
+			languageNames: { de: 'Deutsch', en: 'English' } as Record<string, string>,
 		},
 		signin: {
 			title: 'Anmelden',
@@ -396,6 +398,8 @@ const translations = {
 			questionPlaceholder: 'Enter question…',
 			answerPlaceholder: 'Enter answer…',
 			imagePlaceholder: 'https://example.com/image.jpg',
+			primary: 'Primary',
+			languageNames: { de: 'Deutsch', en: 'English' } as Record<string, string>,
 		},
 		signin: {
 			title: 'Sign In',

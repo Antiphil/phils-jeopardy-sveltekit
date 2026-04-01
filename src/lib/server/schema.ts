@@ -12,9 +12,12 @@ export const savedGames = pgTable('saved_games', {
 	id: text('id').primaryKey(),
 	userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
 	name: text('name').notNull().default('Neues Spiel'),
-	language: text('language'),
+	language: text('language'), // legacy — superseded by languages
+	languages: jsonb('languages'), // string[] e.g. ['de', 'en']
+	boardCount: integer('board_count').notNull().default(2),
 	board1: jsonb('board1').notNull(),
 	board2: jsonb('board2').notNull(),
+	board3: jsonb('board3'),
 	chaosCategory: jsonb('chaos_category').notNull(),
 	chaosEnabled: boolean('chaos_enabled').notNull().default(false),
 	isPublic: boolean('is_public').notNull().default(false),

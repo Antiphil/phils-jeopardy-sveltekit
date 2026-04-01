@@ -3,26 +3,32 @@ import { browser } from '$app/environment';
 
 export type QuestionConfig = {
 	id: string;
-	question: string;
+	question: string; // primary language (or only language)
 	answer: string;
 	image?: string;
 	points: number;
+	translations?: Record<string, { question: string; answer: string }>;
+	timerEnabled?: boolean;
+	timerSeconds?: number;
 };
 
 export type CategoryConfig = {
 	id: string;
 	name: string;
+	nameTranslations?: Record<string, string>;
 	questions: QuestionConfig[];
 };
 
 export type SavedGame = {
 	id: string;
 	name: string;
-	language?: string; // e.g. 'de', 'en' — optional for backwards compatibility
+	languages?: string[]; // e.g. ['de', 'en']
 	createdAt: string;
 	updatedAt: string;
+	boardCount?: 1 | 2 | 3; // default 2
 	board1: CategoryConfig[];
 	board2: CategoryConfig[];
+	board3: CategoryConfig[];
 	chaosCategory: CategoryConfig;
 	chaosEnabled: boolean;
 	isPublic: boolean;
@@ -30,8 +36,10 @@ export type SavedGame = {
 	ratingCount?: number;
 };
 
-function makeBoard(board: 1 | 2): CategoryConfig[] {
-	const pts = board === 1 ? [100, 200, 300, 400, 500] : [200, 400, 600, 800, 1000];
+function makeBoard(board: 1 | 2 | 3): CategoryConfig[] {
+	const pts = board === 1 ? [100, 200, 300, 400, 500]
+		: board === 2 ? [200, 400, 600, 800, 1000]
+		: [400, 800, 1200, 1600, 2000];
 	return Array.from({ length: 6 }, (_, ci) => ({
 		id: `b${board}-c${ci + 1}`,
 		name: `Kategorie ${ci + 1}`,
@@ -58,7 +66,9 @@ function makeChaos(): CategoryConfig {
 }
 
 function migrateGame(raw: unknown): SavedGame {
-	const game = raw as SavedGame & { philCategory?: CategoryConfig };
+	const game = raw as SavedGame & { philCategory?: CategoryConfig; language?: string };
+	// Migrate legacy single language string → array
+	const languages = game.languages ?? (game.language ? [game.language] : undefined);
 	const chaos: CategoryConfig = game.chaosCategory ?? game.philCategory ?? makeChaos();
 	const padded =
 		chaos.questions.length >= 10
@@ -77,6 +87,9 @@ function migrateGame(raw: unknown): SavedGame {
 	);
 	return {
 		...game,
+		languages,
+		boardCount: game.boardCount ?? 2,
+		board3: game.board3 ?? makeBoard(3),
 		chaosCategory: {
 			...chaos,
 			id: 'chaos',
@@ -114,11 +127,13 @@ function createStore() {
 			const game: SavedGame = {
 				id: crypto.randomUUID(),
 				name: 'Neues Spiel',
-				language,
+				languages: language ? [language] : undefined,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
+				boardCount: 2,
 				board1: makeBoard(1),
 				board2: makeBoard(2),
+				board3: makeBoard(3),
 				chaosCategory: makeChaos(),
 				chaosEnabled: false,
 				isPublic: false,

@@ -3,8 +3,10 @@
 	import type { Category } from '$lib/stores/game';
 
 	type SolutionsData = {
+		boardCount?: 1 | 2 | 3;
 		board1: Category[];
 		board2: Category[];
+		board3: Category[];
 		chaosCategory: Category;
 		chaosEnabled: boolean;
 	};
@@ -35,9 +37,15 @@
 	{#if !data}
 		<div class="empty">Keine Spieldaten gefunden. Öffne dieses Fenster über den Button im Gameboard.</div>
 	{:else}
-		{#each [{ label: 'Runde 1', cats: data.board1 }, { label: 'Runde 2', cats: data.board2 }] as round}
+		{@const bc = data.boardCount ?? 2}
+		{@const rounds = [
+			{ label: 'Runde 1', cats: data.board1 },
+			...(bc >= 2 ? [{ label: 'Runde 2', cats: data.board2 }] : []),
+			...(bc >= 3 ? [{ label: 'Runde 3', cats: data.board3 ?? [] }] : []),
+		]}
+		{#each rounds as round}
 			<section class="round-section">
-				<h2 class="round-title">{round.label}</h2>
+				<h2 class="round-title" class:round3-title={round.label === 'Runde 3'}>{round.label}</h2>
 				<div class="cats-grid">
 					{#each round.cats as cat}
 						<div class="cat-card">
@@ -136,6 +144,7 @@
 	}
 
 	.phil-title { color: #fca5a5; border-color: #7f1d1d; }
+	.round3-title { color: #fdba74; border-color: #7c2d12; }
 
 	.cats-grid {
 		display: grid;

@@ -17,6 +17,8 @@ export type Question = {
 	question: string;
 	answer: string;
 	image?: string;
+	timerEnabled?: boolean;
+	timerSeconds?: number;
 };
 
 export type Category = {
@@ -34,10 +36,13 @@ export type GameState = {
 	answered: Record<string, number | null>;
 	wrongAnswers: Record<string, number[]>;
 	pointsLost: Record<number, number>;
-	currentBoard: 1 | 2;
+	currentBoard: 1 | 2 | 3;
+	boardCount: 1 | 2 | 3;
 	board1Complete: boolean;
+	board2Complete: boolean;
 	board1Categories: Category[];
 	board2Categories: Category[];
+	board3Categories: Category[];
 	chaosCategory: Category;
 	chaosEnabled: boolean;
 	currentTurnIndex: number;
@@ -96,9 +101,12 @@ function createGameStore() {
 				wrongAnswers: {},
 				pointsLost: {},
 				currentBoard: 1,
+				boardCount: savedGame?.boardCount ?? 2,
 				board1Complete: false,
+				board2Complete: false,
 				board1Categories: (savedGame?.board1 as Category[]) ?? [],
 				board2Categories: (savedGame?.board2 as Category[]) ?? [],
+				board3Categories: (savedGame?.board3 as Category[]) ?? [],
 				chaosCategory: (savedGame?.chaosCategory as Category) ?? { id: 'chaos', name: 'Chaos Category', questions: [] },
 				chaosEnabled: savedGame?.chaosEnabled ?? false,
 				currentTurnIndex: 0,
@@ -132,10 +140,12 @@ function createGameStore() {
 				const answered = { ...state.answered, [questionId]: scorerId };
 				const scores = { ...state.scores, [scorerId]: (state.scores[scorerId] ?? 0) + points };
 				const board1Ids = state.board1Categories.flatMap((c) => c.questions.map((q) => q.id));
+				const board2Ids = state.board2Categories.flatMap((c) => c.questions.map((q) => q.id));
 				const board1Complete = board1Ids.every((id) => answered[id] !== undefined);
+				const board2Complete = board2Ids.every((id) => answered[id] !== undefined);
 				const turnCount = state.teams ? state.teams.length : state.players.length;
 				const currentTurnIndex = (state.currentTurnIndex + 1) % turnCount;
-				return { ...state, answered, scores, board1Complete, currentTurnIndex };
+				return { ...state, answered, scores, board1Complete, board2Complete, currentTurnIndex };
 			});
 		},
 

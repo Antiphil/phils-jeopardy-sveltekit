@@ -1,5 +1,4 @@
-- i18n
-- scoreboard toggle
+- kleiner haken oder kreuz bei den fragen im editor der anzeigt ob die frage valid zur veröffentlichung ist
 - how to play besser ausarbeiten und auch die erklärung das ein gamemaster benannt werden muss das dieser die option hat sich die lösungen anzuzeigen
 - none gamemaster mode wo alle spieler teilnehmen können 
     - auch ein online mode wo spieler übers internet miteinander spielen können

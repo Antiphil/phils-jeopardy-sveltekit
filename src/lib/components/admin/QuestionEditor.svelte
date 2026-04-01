@@ -1,48 +1,95 @@
 <script lang="ts">
 	import type { QuestionConfig } from '$lib/stores/savedGames';
+	import { t } from '$lib/i18n';
 
-	let { question = $bindable() }: { question: QuestionConfig } = $props();
+	let { question = $bindable(), editingLang = '', langs = [], showTimer = false }: {
+		question: QuestionConfig;
+		editingLang?: string;
+		langs?: string[];
+		showTimer?: boolean;
+	} = $props();
 
-	let expanded = $state(!question.question && !question.answer);
+	let expanded = $state(false);
+
+	const isPrimary = $derived(!editingLang || editingLang === langs[0]);
+
+	const isComplete = $derived(!!question.question.trim() && !!question.answer.trim());
+
+	function getQ(): string {
+		if (isPrimary) return question.question;
+		return question.translations?.[editingLang]?.question ?? '';
+	}
+
+	function setQ(val: string) {
+		if (isPrimary) {
+			question = { ...question, question: val };
+		} else {
+			question = {
+				...question,
+				translations: { ...question.translations, [editingLang]: { question: val, answer: getA() } },
+			};
+		}
+	}
+
+	function getA(): string {
+		if (isPrimary) return question.answer;
+		return question.translations?.[editingLang]?.answer ?? '';
+	}
+
+	function setA(val: string) {
+		if (isPrimary) {
+			question = { ...question, answer: val };
+		} else {
+			question = {
+				...question,
+				translations: { ...question.translations, [editingLang]: { question: getQ(), answer: val } },
+			};
+		}
+	}
+
+	const preview = $derived(question.question
+		? question.question.slice(0, 48) + (question.question.length > 48 ? '…' : '')
+		: $t.questionEditor.noQuestion);
 </script>
 
-<div class="qe" class:expanded>
+<div class="qe" class:expanded class:complete={isComplete}>
 	<button class="qe-header" onclick={() => expanded = !expanded}>
 		<span class="qe-pts">{question.points > 0 ? `${question.points} Pkt` : '⭐ Phil'}</span>
-		<span class="qe-preview">
-			{question.question ? question.question.slice(0, 48) + (question.question.length > 48 ? '…' : '') : 'Keine Frage'}
-		</span>
+		<span class="qe-preview" class:done={isComplete}>{preview}</span>
+		{#if isComplete}<span class="qe-check">✓</span>{/if}
 		<span class="qe-chevron" class:open={expanded}>›</span>
 	</button>
 
 	{#if expanded}
 		<div class="qe-body">
 			<div class="field">
-				<span class="field-label">Frage</span>
+				<span class="field-label">{$t.questionEditor.question}</span>
 				<textarea
 					class="field-input"
 					rows="2"
-					placeholder="Frage eingeben…"
-					bind:value={question.question}
+					placeholder={$t.questionEditor.questionPlaceholder}
+					value={getQ()}
+					oninput={(e) => setQ((e.target as HTMLTextAreaElement).value)}
 				></textarea>
 			</div>
 
 			<div class="field">
-				<span class="field-label">Antwort</span>
+				<span class="field-label">{$t.questionEditor.answer}</span>
 				<input
 					class="field-input"
 					type="text"
-					placeholder="Antwort eingeben…"
-					bind:value={question.answer}
+					placeholder={$t.questionEditor.answerPlaceholder}
+					value={getA()}
+					oninput={(e) => setA((e.target as HTMLInputElement).value)}
 				/>
 			</div>
 
 			<div class="field">
-				<span class="field-label">Bild-URL (optional)</span>
+				<span class="field-label">{$t.questionEditor.imageUrl}</span>
 				<input
 					class="field-input"
 					type="url"
-					placeholder="https://beispiel.de/bild.jpg"
+					placeholder={$t.questionEditor.imagePlaceholder}
 					bind:value={question.image}
 				/>
 				{#if question.image}
@@ -50,7 +97,39 @@
 				{/if}
 			</div>
 
-			</div>
+			{#if showTimer}
+				<div class="field timer-field">
+					<label class="timer-toggle">
+						<input
+							type="checkbox"
+							class="timer-checkbox"
+							checked={question.timerEnabled ?? false}
+							onchange={(e) => {
+								const enabled = (e.target as HTMLInputElement).checked;
+								question = { ...question, timerEnabled: enabled, timerSeconds: question.timerSeconds ?? 30 };
+							}}
+						/>
+						<span class="timer-toggle-label">⏱ Timer aktivieren</span>
+					</label>
+					{#if question.timerEnabled}
+						<div class="timer-seconds-row">
+							<input
+								class="field-input timer-input"
+								type="number"
+								min="5"
+								max="300"
+								value={question.timerSeconds ?? 30}
+								oninput={(e) => {
+									const val = parseInt((e.target as HTMLInputElement).value) || 30;
+									question = { ...question, timerSeconds: Math.max(5, Math.min(300, val)) };
+								}}
+							/>
+							<span class="timer-unit">Sekunden</span>
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -63,6 +142,13 @@
 	}
 
 	.qe.expanded { border-color: #7c3aed; }
+
+	.qe.complete {
+		border-color: #166534;
+		box-shadow: inset 3px 0 0 #16a34a;
+	}
+
+	.qe.complete.expanded { border-color: #16a34a; }
 
 	.qe-header {
 		width: 100%;
@@ -78,6 +164,9 @@
 	}
 
 	.qe-header:hover { background: #2a1050; }
+
+	.qe.complete .qe-header { background: #0a1f14; }
+	.qe.complete .qe-header:hover { background: #0d2a1a; }
 
 	.qe-pts {
 		font-family: 'Fredoka One', cursive;
@@ -97,6 +186,15 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.qe-preview.done { color: #4ade80; }
+
+	.qe-check {
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #4ade80;
+		flex-shrink: 0;
 	}
 
 	.qe-chevron {
@@ -152,5 +250,55 @@
 		border: 1.5px solid #3d1a6e;
 		object-fit: contain;
 		margin-top: 0.25rem;
+	}
+
+	.timer-field {
+		border-top: 1px solid #2a1050;
+		padding-top: 0.5rem;
+		gap: 0.4rem;
+	}
+
+	.timer-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+		width: fit-content;
+	}
+
+	.timer-checkbox {
+		width: 15px;
+		height: 15px;
+		accent-color: #ef4444;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	.timer-toggle-label {
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: #f87171;
+		letter-spacing: 0.3px;
+	}
+
+	.timer-seconds-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.timer-input {
+		width: 80px !important;
+		text-align: center;
+		border-color: #7f1d1d !important;
+		color: #fca5a5 !important;
+	}
+
+	.timer-input:focus { border-color: #ef4444 !important; }
+
+	.timer-unit {
+		font-size: 0.78rem;
+		color: #7f1d1d;
+		font-weight: 700;
 	}
 </style>

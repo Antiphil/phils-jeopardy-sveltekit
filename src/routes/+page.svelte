@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import type { Player, Team } from '$lib/stores/game';
 	import type { SavedGame } from '$lib/stores/savedGames';
+	import { DEMO_GAME, DEMO_GAME_PLAYABLE } from '$lib/demoGame';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/logo.png';
@@ -93,6 +94,7 @@
 		teams={pendingTeams}
 		publicGames={data.publicGames}
 		loggedIn={!!$page.data.session?.user}
+		demoGame={DEMO_GAME_PLAYABLE ? DEMO_GAME : undefined}
 		onback={() => (step = 'players')}
 		onstart={onGameSelected}
 	/>

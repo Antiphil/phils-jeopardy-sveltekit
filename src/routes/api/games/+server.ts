@@ -12,12 +12,15 @@ async function requireUserId(event: Parameters<RequestHandler>[0]): Promise<stri
 }
 
 function toSavedGame(row: typeof savedGames.$inferSelect): SavedGame {
+	const langs = (row.languages as string[] | null) ?? (row.language ? [row.language] : undefined);
 	return {
 		id: row.id,
 		name: row.name,
-		language: row.language ?? undefined,
+		languages: langs,
+		boardCount: (row.boardCount ?? 2) as 1 | 2 | 3,
 		board1: row.board1 as CategoryConfig[],
 		board2: row.board2 as CategoryConfig[],
+		board3: (row.board3 as CategoryConfig[]) ?? [],
 		chaosCategory: row.chaosCategory as CategoryConfig,
 		chaosEnabled: row.chaosEnabled,
 		isPublic: row.isPublic,
@@ -45,9 +48,11 @@ export const POST: RequestHandler = async (event) => {
 			id: body.id,
 			userId,
 			name: body.name,
-			language: body.language ?? null,
+			languages: body.languages ?? null,
+			boardCount: body.boardCount ?? 2,
 			board1: body.board1 as unknown as typeof savedGames.$inferInsert['board1'],
 			board2: body.board2 as unknown as typeof savedGames.$inferInsert['board2'],
+			board3: body.board3 as unknown as typeof savedGames.$inferInsert['board3'],
 			chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
 			chaosEnabled: body.chaosEnabled,
 			createdAt: new Date(body.createdAt),

@@ -24,7 +24,7 @@
 	<div class="game-item-info">
 		<div class="game-item-name-row">
 			<span class="game-item-name">{game.name}</span>
-			{#if game.language}<span class="lang-badge">{game.language === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/if}
+			{#each game.languages ?? [] as lang}<span class="lang-badge">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
 			{#if game.isPublic}<span class="public-badge">🌐</span>{/if}
 		</div>
 		<span class="game-item-date">{formatDate(game.updatedAt)}</span>
