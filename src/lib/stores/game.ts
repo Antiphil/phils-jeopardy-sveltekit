@@ -19,6 +19,7 @@ export type Question = {
 	image?: string;
 	timerEnabled?: boolean;
 	timerSeconds?: number;
+	chaosType?: 'question' | 'wordle';
 };
 
 export type Category = {

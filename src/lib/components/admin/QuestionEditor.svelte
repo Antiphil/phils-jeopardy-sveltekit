@@ -9,10 +9,12 @@
 		showTimer?: boolean;
 	} = $props();
 
+	const MAX_GUESSES = 6;
+
 	let expanded = $state(false);
 
 	const isPrimary = $derived(!editingLang || editingLang === langs[0]);
-
+	const chaosType = $derived(question.chaosType ?? 'question');
 	const isComplete = $derived(!!question.question.trim() && !!question.answer.trim());
 
 	function getQ(): string {
@@ -62,40 +64,86 @@
 
 	{#if expanded}
 		<div class="qe-body">
-			<div class="field">
-				<span class="field-label">{$t.questionEditor.question}</span>
-				<textarea
-					class="field-input"
-					rows="2"
-					placeholder={$t.questionEditor.questionPlaceholder}
-					value={getQ()}
-					oninput={(e) => setQ((e.target as HTMLTextAreaElement).value)}
-				></textarea>
-			</div>
+			{#if showTimer}
+				<div class="field">
+					<span class="field-label">Spielmodus</span>
+					<select
+						class="field-input type-select"
+						value={chaosType}
+						onchange={(e) => {
+							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' };
+						}}
+					>
+						<option value="question">❓ Frage / Aufgabe</option>
+						<option value="wordle">🟩 Wordle</option>
+					</select>
+				</div>
+			{/if}
 
-			<div class="field">
-				<span class="field-label">{$t.questionEditor.answer}</span>
-				<input
-					class="field-input"
-					type="text"
-					placeholder={$t.questionEditor.answerPlaceholder}
-					value={getA()}
-					oninput={(e) => setA((e.target as HTMLInputElement).value)}
-				/>
-			</div>
+			{#if chaosType === 'wordle'}
+				<div class="field">
+					<span class="field-label">Wort zum Erraten</span>
+					<input
+						class="field-input wordle-word-input"
+						type="text"
+						placeholder="z.B. BERLIN"
+						value={getA()}
+						oninput={(e) => {
+							const val = (e.target as HTMLInputElement).value.replace(/[^a-zA-ZäöüÄÖÜ]/g, '').toUpperCase();
+							(e.target as HTMLInputElement).value = val;
+							setA(val);
+						}}
+					/>
+					{#if question.answer}
+						<span class="wordle-len-hint">{question.answer.length} Buchstaben · {MAX_GUESSES} Versuche</span>
+					{/if}
+				</div>
+				<div class="field">
+					<span class="field-label">Hinweis (optional)</span>
+					<textarea
+						class="field-input"
+						rows="2"
+						placeholder="Wird über dem Spielfeld angezeigt…"
+						value={getQ()}
+						oninput={(e) => setQ((e.target as HTMLTextAreaElement).value)}
+					></textarea>
+				</div>
+			{:else}
+				<div class="field">
+					<span class="field-label">{$t.questionEditor.question}</span>
+					<textarea
+						class="field-input"
+						rows="2"
+						placeholder={$t.questionEditor.questionPlaceholder}
+						value={getQ()}
+						oninput={(e) => setQ((e.target as HTMLTextAreaElement).value)}
+					></textarea>
+				</div>
 
-			<div class="field">
-				<span class="field-label">{$t.questionEditor.imageUrl}</span>
-				<input
-					class="field-input"
-					type="url"
-					placeholder={$t.questionEditor.imagePlaceholder}
-					bind:value={question.image}
-				/>
-				{#if question.image}
-					<img class="img-preview" src={question.image} alt="Vorschau" />
-				{/if}
-			</div>
+				<div class="field">
+					<span class="field-label">{$t.questionEditor.answer}</span>
+					<input
+						class="field-input"
+						type="text"
+						placeholder={$t.questionEditor.answerPlaceholder}
+						value={getA()}
+						oninput={(e) => setA((e.target as HTMLInputElement).value)}
+					/>
+				</div>
+
+				<div class="field">
+					<span class="field-label">{$t.questionEditor.imageUrl}</span>
+					<input
+						class="field-input"
+						type="url"
+						placeholder={$t.questionEditor.imagePlaceholder}
+						bind:value={question.image}
+					/>
+					{#if question.image}
+						<img class="img-preview" src={question.image} alt="Vorschau" />
+					{/if}
+				</div>
+			{/if}
 
 			{#if showTimer}
 				<div class="field timer-field">
@@ -300,5 +348,28 @@
 		font-size: 0.78rem;
 		color: #7f1d1d;
 		font-weight: 700;
+	}
+
+	.type-select {
+		appearance: none;
+		cursor: pointer;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b47a0'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 0.65rem center;
+		padding-right: 2rem;
+	}
+
+	.wordle-word-input {
+		font-family: 'Fredoka One', cursive;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		font-size: 1rem;
+	}
+
+	.wordle-len-hint {
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #4ade80;
+		letter-spacing: 0.3px;
 	}
 </style>

@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
+export type ChaosType = 'question' | 'wordle';
+
 export type QuestionConfig = {
 	id: string;
 	question: string; // primary language (or only language)
@@ -10,6 +12,7 @@ export type QuestionConfig = {
 	translations?: Record<string, { question: string; answer: string }>;
 	timerEnabled?: boolean;
 	timerSeconds?: number;
+	chaosType?: ChaosType; // only relevant for chaos category questions
 };
 
 export type CategoryConfig = {

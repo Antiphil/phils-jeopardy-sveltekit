@@ -2,6 +2,7 @@
 	import type { Question } from '$lib/stores/game';
 	import { playCorrect, playWrong } from '$lib/sounds';
 	import { t } from '$lib/i18n';
+	import Wordle from './Wordle.svelte';
 
 	let { question, answerer, onclose, onaward, ontimeout }: {
 		question: Question;
@@ -62,6 +63,8 @@
 		if (e.target === e.currentTarget && !answerRevealed && !timedOut) onclose();
 	}
 
+	const isWordle = $derived(question.chaosType === 'wordle');
+
 	function handleAward(points: number) {
 		stopTimer();
 		if (points > 0) {
@@ -71,6 +74,18 @@
 			playWrong();
 			onaward(0);
 		}
+	}
+
+	function handleWordleWin() {
+		stopTimer();
+		playCorrect();
+		answerRevealed = true;
+	}
+
+	function handleWordleLose() {
+		stopTimer();
+		playWrong();
+		onaward(0);
 	}
 </script>
 
@@ -110,28 +125,47 @@
 			</div>
 		{/if}
 
-		<div class="question-text">{question.question}</div>
-
-		{#if answerRevealed}
-			<div class="answer-box">
-				<div class="answer-label">{$t.questionModal.answer}</div>
-				<div class="answer-text">{question.answer}</div>
-			</div>
-			<button class="btn-reveal" onclick={() => onaward(question.points)}>
-				{$t.questionModal.next}
-			</button>
-		{:else if !timedOut}
-			<div class="award-row">
-				<span class="award-label">{$t.questionModal.correctOrWrong}</span>
-				<div class="award-btns">
-					<button class="btn-award correct" onclick={() => handleAward(question.points)}>
-						{$t.questionModal.correct}
-					</button>
-					<button class="btn-award wrong" onclick={() => handleAward(0)}>
-						{$t.questionModal.wrong}
-					</button>
+		{#if isWordle}
+			{#if answerRevealed}
+				<div class="answer-box">
+					<div class="answer-label">🟩 Gelöst!</div>
+					<div class="answer-text">{question.answer.toUpperCase()}</div>
 				</div>
-			</div>
+				<button class="btn-reveal" onclick={() => onaward(question.points)}>
+					{$t.questionModal.next}
+				</button>
+			{:else if !timedOut}
+				<Wordle
+					word={question.answer}
+					hint={question.question}
+					onwin={handleWordleWin}
+					onlose={handleWordleLose}
+				/>
+			{/if}
+		{:else}
+			<div class="question-text">{question.question}</div>
+
+			{#if answerRevealed}
+				<div class="answer-box">
+					<div class="answer-label">{$t.questionModal.answer}</div>
+					<div class="answer-text">{question.answer}</div>
+				</div>
+				<button class="btn-reveal" onclick={() => onaward(question.points)}>
+					{$t.questionModal.next}
+				</button>
+			{:else if !timedOut}
+				<div class="award-row">
+					<span class="award-label">{$t.questionModal.correctOrWrong}</span>
+					<div class="award-btns">
+						<button class="btn-award correct" onclick={() => handleAward(question.points)}>
+							{$t.questionModal.correct}
+						</button>
+						<button class="btn-award wrong" onclick={() => handleAward(0)}>
+							{$t.questionModal.wrong}
+						</button>
+					</div>
+				</div>
+			{/if}
 		{/if}
 
 		{#if !timedOut}
@@ -159,7 +193,7 @@
 		border-radius: 1.5rem;
 		padding: 2.5rem 2rem 2rem;
 		width: 100%;
-		max-width: 640px;
+		max-width: 520px;
 		max-height: 92vh;
 		overflow-y: auto;
 		box-shadow: 0 8px 48px rgba(168, 85, 247, 0.4);
