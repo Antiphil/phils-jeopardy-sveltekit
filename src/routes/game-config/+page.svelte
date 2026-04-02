@@ -10,7 +10,7 @@ import { DEMO_GAME } from '$lib/demoGame';
 	import type { PageData } from './$types';
 
 	function isQuestionFilled(q: QuestionConfig, langs: string[]): boolean {
-		if (q.chaosType === 'wheel') return true;
+		if (q.chaosType === 'wheel' || q.chaosType === 'spotdiff') return true;
 		const wordGuess = q.chaosType === 'wordle' || q.chaosType === 'hangman';
 		if (!wordGuess && !q.question.trim()) return false;
 		if (!q.answer.trim()) return false;

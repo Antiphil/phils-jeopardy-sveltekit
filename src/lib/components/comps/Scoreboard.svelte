@@ -59,6 +59,7 @@
 
 		const delta = target - start;
 		deltas[id] = { value: delta, key: Date.now() + id };
+		setTimeout(() => { deltas[id] = undefined!; }, 1900);
 
 		if (intervals[id]) clearInterval(intervals[id]);
 

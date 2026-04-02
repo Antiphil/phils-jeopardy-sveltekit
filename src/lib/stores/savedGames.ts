@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ChaosType = 'question' | 'wordle' | 'hangman' | 'wheel';
+export type ChaosType = 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff';
 
 export type QuestionConfig = {
 	id: string;

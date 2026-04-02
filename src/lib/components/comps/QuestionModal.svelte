@@ -7,6 +7,7 @@
 	import Hangman from './Hangman.svelte';
 	import ChaosWheel from './ChaosWheel.svelte';
 	import type { WheelResult, Scorer as WheelScorer } from './ChaosWheel.svelte';
+	import SpotTheDiff from './SpotTheDiff.svelte';
 
 	let { question, answerer, onclose, onaward, ontimeout, spinnerScorer, otherScorers, onwheelresult }: {
 		question: Question;
@@ -66,9 +67,10 @@
 		if (e.target === e.currentTarget && !answerRevealed && !timedOut) onclose();
 	}
 
-	const isWordle = $derived(question.chaosType === 'wordle');
-	const isHangman = $derived(question.chaosType === 'hangman');
-	const isWheel = $derived(question.chaosType === 'wheel');
+	const isWordle   = $derived(question.chaosType === 'wordle');
+	const isHangman  = $derived(question.chaosType === 'hangman');
+	const isWheel    = $derived(question.chaosType === 'wheel');
+	const isSpotDiff = $derived(question.chaosType === 'spotdiff');
 
 	function handleAward(points: number) {
 		stopTimer();
@@ -95,30 +97,35 @@
 </script>
 
 <div class="backdrop" role="button" tabindex="-1" onmousedown={handleBackdrop} onkeydown={() => {}}>
-	<div class="modal" role="dialog" aria-modal="true">
+	<div class="modal" class:modal-wide={isSpotDiff} role="dialog" aria-modal="true">
 
-		<div class="points-badge">{question.points > 0 ? `${question.points} ${$t.questionModal.points}` : '🎲 Chaos Category'}</div>
+		<div class="modal-topbar">
+			<div class="points-badge">{question.points > 0 ? `${question.points} ${$t.questionModal.points}` : '🎲 Chaos'}</div>
 
-		{#if hasTimer && !timedOut}
-			<div class="timer-bar-wrap" class:urgent={timerUrgent} class:critical={timerCritical}>
-				<div class="timer-bar-bg">
-					<div class="timer-bar-fill" style={`width: ${timerPercent}%`}></div>
+			{#if timedOut}
+				<div class="timeout-inline">⏰ Zeit!</div>
+			{:else if hasTimer}
+				<div class="timer-inline" class:urgent={timerUrgent} class:critical={timerCritical}>
+					<div class="timer-bar-bg">
+						<div class="timer-bar-fill" style={`width: ${timerPercent}%`}></div>
+					</div>
+					<span class="timer-count" class:urgent={timerUrgent}>{timeLeft}s</span>
 				</div>
-				<span class="timer-count" class:urgent={timerUrgent}>{timeLeft}s</span>
-			</div>
-		{/if}
+			{:else}
+				<div class="topbar-spacer"></div>
+			{/if}
 
-		{#if timedOut}
-			<div class="timeout-banner">⏰ Zeit abgelaufen!</div>
-		{/if}
+			{#if answerer}
+				<div class="answerer-pill">
+					<span class="answerer-avatar">{answerer.avatar}</span>
+					<span class="answerer-name" style={`color: ${answerer.color}`}>{answerer.name}</span>
+				</div>
+			{/if}
 
-		{#if answerer}
-			<div class="answerer-row">
-				<span class="answerer-avatar">{answerer.avatar}</span>
-				<span class="answerer-name" style={`color: ${answerer.color}`}>{answerer.name}</span>
-				<span class="answerer-label">{$t.questionModal.answering}</span>
-			</div>
-		{/if}
+			{#if !isWheel && !timedOut}
+				<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
+			{/if}
+		</div>
 
 		{#if question.image}
 			{@const domain = (() => { try { return new URL(question.image!).hostname.replace(/^www\./, ''); } catch { return null; } })()}
@@ -140,6 +147,11 @@
 			{:else}
 				<p style="color:#a78bca;font-size:0.9rem">Kein Spieler ausgewählt.</p>
 			{/if}
+		{:else if isSpotDiff}
+			<SpotTheDiff
+				onwin={() => { stopTimer(); playCorrect(); onaward(question.points); }}
+				onlose={() => { stopTimer(); playWrong(); onaward(0); }}
+			/>
 		{:else if isWordle || isHangman}
 			{#if answerRevealed}
 				<div class="answer-box">
@@ -192,9 +204,6 @@
 			{/if}
 		{/if}
 
-		{#if !isWheel && !timedOut}
-			<button class="close-btn" onclick={onclose} aria-label={$t.questionModal.close}>✕</button>
-		{/if}
 	</div>
 </div>
 
@@ -215,7 +224,7 @@
 		background: #1e0d38;
 		border: 2px solid #5b21b6;
 		border-radius: 1.5rem;
-		padding: 2.5rem 2rem 2rem;
+		padding: 1.25rem 1.5rem 1.5rem;
 		width: 100%;
 		max-width: 520px;
 		max-height: 92vh;
@@ -224,25 +233,59 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1.25rem;
+		gap: 0.9rem;
 		position: relative;
 		text-align: center;
 	}
 
-	/* ── Timer bar ─────────────────────────────── */
-	.timer-bar-wrap {
+	.modal-wide {
+		max-width: 92vw;
+		width: 92vw;
+		padding: 1.25rem 1.5rem 1.5rem;
+	}
+
+	/* ── Topbar ─────────────────────────────────── */
+	.modal-topbar {
 		width: 100%;
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
+		min-height: 36px;
+		background: #150828;
+		border: 1px solid #3d1a6e;
+		border-radius: 0.85rem;
+		padding: 0.4rem 0.5rem 0.4rem 0.5rem;
+	}
+
+	/* ── Points badge ───────────────────────────── */
+	.points-badge {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.85rem;
+		background: linear-gradient(135deg, #a855f7, #d946ef);
+		color: white;
+		padding: 0.2rem 0.85rem;
+		border-radius: 999px;
+		white-space: nowrap;
+		box-shadow: 0 2px 8px rgba(168,85,247,0.35);
+		flex-shrink: 0;
+	}
+
+	/* ── Timer inline ───────────────────────────── */
+	.timer-inline {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 0;
 	}
 
 	.timer-bar-bg {
 		flex: 1;
-		height: 8px;
+		height: 6px;
 		background: #2a1050;
 		border-radius: 999px;
 		overflow: hidden;
+		min-width: 0;
 	}
 
 	.timer-bar-fill {
@@ -252,11 +295,11 @@
 		transition: width 1s linear, background 0.3s;
 	}
 
-	.timer-bar-wrap.critical .timer-bar-fill {
+	.timer-inline.critical .timer-bar-fill {
 		background: linear-gradient(90deg, #fbbf24, #f97316);
 	}
 
-	.timer-bar-wrap.urgent .timer-bar-fill {
+	.timer-inline.urgent .timer-bar-fill {
 		background: linear-gradient(90deg, #ef4444, #dc2626);
 		animation: pulse-bar 0.5s ease-in-out infinite alternate;
 	}
@@ -268,10 +311,11 @@
 
 	.timer-count {
 		font-family: 'Fredoka One', cursive;
-		font-size: 1.1rem;
+		font-size: 0.85rem;
 		color: #a78bca;
-		min-width: 36px;
+		min-width: 28px;
 		text-align: right;
+		flex-shrink: 0;
 		transition: color 0.3s;
 	}
 
@@ -285,47 +329,43 @@
 		to   { transform: scale(1.15); }
 	}
 
-	/* ── Timeout banner ────────────────────────── */
-	.timeout-banner {
+	/* ── Timeout inline ─────────────────────────── */
+	.timeout-inline {
+		flex: 1;
 		font-family: 'Fredoka One', cursive;
-		font-size: 1.6rem;
+		font-size: 0.9rem;
 		color: #ef4444;
-		background: rgba(239, 68, 68, 0.1);
-		border: 2px solid #ef4444;
-		border-radius: 1rem;
-		padding: 0.5rem 1.5rem;
+		text-align: center;
 		animation: shake 0.4s ease-out;
 	}
 
 	@keyframes shake {
 		0%   { transform: translateX(0); }
-		20%  { transform: translateX(-6px); }
-		40%  { transform: translateX(6px); }
-		60%  { transform: translateX(-4px); }
-		80%  { transform: translateX(4px); }
+		20%  { transform: translateX(-5px); }
+		40%  { transform: translateX(5px); }
+		60%  { transform: translateX(-3px); }
+		80%  { transform: translateX(3px); }
 		100% { transform: translateX(0); }
 	}
 
-	/* ── Rest (unchanged) ──────────────────────── */
-	.answerer-row {
+	/* ── Answerer pill ──────────────────────────── */
+	.answerer-pill {
 		display: flex;
 		align-items: center;
-		gap: 0.45rem;
+		gap: 0.3rem;
 		background: #261040;
 		border: 1px solid #3d1a6e;
 		border-radius: 999px;
-		padding: 0.25rem 0.85rem 0.25rem 0.5rem;
-		font-size: 0.85rem;
+		padding: 0.18rem 0.65rem 0.18rem 0.4rem;
+		flex-shrink: 0;
 	}
 
-	.answerer-avatar { font-size: 1.1rem; }
+	.answerer-avatar { font-size: 0.95rem; line-height: 1; }
 
 	.answerer-name {
 		font-family: 'Fredoka One', cursive;
-		font-size: 0.9rem;
+		font-size: 0.8rem;
 	}
-
-	.answerer-label { color: #7c5faa; font-weight: 600; }
 
 	.image-wrap {
 		position: relative;
@@ -363,16 +403,6 @@
 		color: rgba(255, 255, 255, 0.95);
 		background: rgba(0, 0, 0, 0.75);
 		text-decoration: underline;
-	}
-
-	.points-badge {
-		font-family: 'Fredoka One', cursive;
-		font-size: 1rem;
-		background: linear-gradient(135deg, #a855f7, #d946ef);
-		color: white;
-		padding: 0.3rem 1.2rem;
-		border-radius: 999px;
-		box-shadow: 0 2px 12px rgba(168,85,247,0.4);
 	}
 
 	.question-text {
@@ -467,22 +497,22 @@
 
 	.btn-award.wrong:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(248,113,113,0.5); }
 
+	.topbar-spacer { flex: 1; }
+
 	.close-btn {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
 		background: #32155a;
 		border: 1px solid #5b21b6;
 		color: #a78bca;
-		width: 30px;
-		height: 30px;
+		width: 28px;
+		height: 28px;
 		border-radius: 50%;
 		cursor: pointer;
-		font-size: 0.75rem;
+		font-size: 0.7rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		transition: background 0.15s, color 0.15s;
+		flex-shrink: 0;
 	}
 
 	.close-btn:hover { background: #5b21b6; color: #f3e8ff; }

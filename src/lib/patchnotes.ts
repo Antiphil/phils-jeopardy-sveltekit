@@ -6,6 +6,20 @@ export type PatchNote = {
 
 export const PATCHNOTES: PatchNote[] = [
 	{
+		version: '0.5.2',
+		date: '02.04.2026',
+		changes: [
+			{ type: 'new', text: 'Chaos Category: "Finde den Fehler" — 10×5 Bild-Grid, ein Tile enthält einen Fehler' },
+			{ type: 'new', text: 'How-to-Play: vollständig überarbeitet — 7 Schritte inkl. Gamemaster-Erklärung und allen Minigame-Typen' },
+			{ type: 'change', text: 'Frage-Modal: Points-Badge, Timer und Answerer in einer kompakten Topbar-Zeile zusammengefasst' },
+			{ type: 'change', text: 'Frage-Modal: Close-Button in die Topbar integriert' },
+			{ type: 'change', text: 'Frage-Modal beim Finde-den-Fehler deutlich breiter (92vw) für bessere Erkennbarkeit' },
+			{ type: 'change', text: 'Chaos Category: Typ-Icons auf unberührten Tiles entfernt — nur noch Punktezahl sichtbar' },
+			{ type: 'fix', text: 'Finde-den-Fehler: Modal schließt sich nun korrekt nach dem Countdown' },
+			{ type: 'fix', text: 'Scoreboard: Delta-Badge wurde bei Positionstausch ohne Punkteänderung erneut angezeigt' },
+		],
+	},
+	{
 		version: '0.5.1',
 		date: '02.04.2026',
 		changes: [
@@ -13,12 +27,11 @@ export const PATCHNOTES: PatchNote[] = [
 			{ type: 'new', text: 'Versionsnummer auf Startseite' },
 			{ type: 'new', text: 'Standard-Timer global konfigurierbar in der Game-Config (Standard: 45 Sek.)' },
 			{ type: 'change', text: 'Chaos Wheel: Timer wird für das Glücksrad deaktiviert' },
-			{ type: 'change', text: 'Game-Config: ausgefüllte Chaos-Wheel-Felder zählen zur Veröffentlichungs-Bereitschaft' },
-			{ type: 'change', text: 'Scoreboard: Delta-Badge absolut mittig über der Karte positioniert, beeinflusst Breite nicht mehr' },
-			{ type: 'change', text: 'Spielboard-Topbar: Breite passt zum Board, mehr Abstand nach unten' },
+			{ type: 'fix', text: 'Game-Config: Chaoswheel option verhindert nun nicht mehr das veröffentlichen von Spielen.' },
+			{ type: 'fix', text: 'Scoreboard: Punkte-Badge optisch gefixed' },
 			{ type: 'fix', text: 'Scoreboard visibility fix' },
-			{ type: 'fix', text: 'Timer-Sekunden verschwanden nach dem Speichern (fehlende DB-Spalte)' },
-			{ type: 'fix', text: 'Globaler Timer wurde im Spiel ignoriert — eigener Wert wurde nicht übernommen' },
+			{ type: 'fix', text: 'Timer-Sekunden verschwinden nun nicht mehr nach dem speichern' },
+			{ type: 'fix', text: 'Globaler Timer wurde im Spiel ignoriert da eigener Wert wurde nicht übernommen wurde.' },
 		],
 	},
 	{
@@ -28,11 +41,11 @@ export const PATCHNOTES: PatchNote[] = [
 			{ type: 'new', text: 'Chaos Wheel — Glücksrad mit zufälligen Effekten (Doppelte Punkte, Tausch, Aussetzen …)' },
 			{ type: 'new', text: 'Hangman-Minigame in der Chaos Category' },
 			{ type: 'new', text: 'Wordle-Minigame in der Chaos Category' },
-			{ type: 'new', text: 'Scoreboard-Animation: Counter zählt hoch/runter, Delta-Badge fliegt auf' },
+			{ type: 'new', text: 'Scoreboard-Animation: Counter zählt hoch/runter + Punkte-Badge' },
 			{ type: 'new', text: '3 Runden wählbar (Kurz / Normal / Lang)' },
 			{ type: 'change', text: 'Chaos Category: volle Minuspunkte bei falscher Antwort' },
 			{ type: 'change', text: 'Chaos Category: neues Design als breite Sektion unter dem Board' },
-			{ type: 'change', text: 'Spielboard: Rundenanzeige statt klickbarer Tabs, Wer-dran-ist mittig' },
+			{ type: 'change', text: 'Gameboard: Rework der Topbar mit Rundenanzeige, Aktivem Spieler und Gamemaster Buttons' },
 			{ type: 'fix', text: 'Timer resettet sich nicht mehr beim Tippen im Wordle' },
 			{ type: 'fix', text: 'Board 3 Inhalt wird wieder korrekt in der Game-Config angezeigt' },
 		],
@@ -41,12 +54,11 @@ export const PATCHNOTES: PatchNote[] = [
 		version: '0.4.3',
 		date: '01.04.2026',
 		changes: [
-			{ type: 'new', text: 'Per-Frage Timer in der Chaos Category mit Auto-Timeout' },
-			{ type: 'new', text: 'Visuelle Fertig-Indikatoren in der Game-Config (grüner Rand wenn ausgefüllt)' },
-			{ type: 'new', text: 'Demo-Spiel spielbar über die Startseite' },
-			{ type: 'new', text: 'Lösungsseite auf 1–3 Runden angepasst' },
-			{ type: 'fix', text: 'Board 3 wird nach Speichern korrekt geladen (leeres Array Bug)' },
-			{ type: 'fix', text: 'boardCount wird korrekt in der Datenbank gespeichert' },
+			{ type: 'new', text: 'Validierungs Indikatoren für Publizierung in der Game-Config.' },
+			{ type: 'new', text: 'Demo-Spiel vorerst spielbar.' },
+			{ type: 'fix', text: 'Lösungsseite auf 1–3 Runden angepasst' },
+			{ type: 'fix', text: 'Board 3 wird nach Speichern korrekt geladen' },
+			{ type: 'fix', text: 'boardCount wird nun korrekt in der Datenbank gespeichert' },
 		],
 	},
 	{
@@ -55,7 +67,7 @@ export const PATCHNOTES: PatchNote[] = [
 		changes: [
 			{ type: 'new', text: 'Hardgecodetes Demo-Spiel mit 3 Boards, Chaos Category (DE+EN)' },
 			{ type: 'new', text: 'Demo-Spiel in der Sidebar als Read-Only Vorschau' },
-			{ type: 'new', text: 'Alle Fragen in der Game-Config standardmäßig zugeklappt' },
+			{ type: 'change', text: 'Alle Fragen in der Game-Config standardmäßig zugeklappt' },
 		],
 	},
 ];

@@ -16,7 +16,7 @@
 	const isPrimary = $derived(!editingLang || editingLang === langs[0]);
 	const chaosType = $derived(question.chaosType ?? 'question');
 	const isComplete = $derived(
-		chaosType === 'wheel'
+		chaosType === 'wheel' || chaosType === 'spotdiff'
 			? true
 			: !!question.question.trim() && !!question.answer.trim()
 	);
@@ -75,13 +75,14 @@
 						class="field-input type-select"
 						value={chaosType}
 						onchange={(e) => {
-							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' | 'hangman' };
+							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff' };
 						}}
 					>
 						<option value="question">❓ Frage / Aufgabe</option>
 						<option value="wordle">🟩 Wordle</option>
 						<option value="hangman">🪢 Hangman</option>
 						<option value="wheel">🎡 Chaos Wheel</option>
+							<option value="spotdiff">🔍 Finde den Fehler</option>
 					</select>
 				</div>
 			{/if}
@@ -90,6 +91,11 @@
 				<div class="wheel-info">
 					<span class="wheel-info-icon">🎡</span>
 					<span>Das Chaos Wheel dreht sich — kein Text nötig.<br/>Die Effekte werden zufällig bestimmt.</span>
+				</div>
+			{:else if chaosType === 'spotdiff'}
+				<div class="wheel-info">
+					<span class="wheel-info-icon">🔍</span>
+					<span>Ein 8×8-Bild-Grid wird angezeigt — ein Tile enthält einen Fehler.<br/>Szenen werden aus <code>src/lib/assets/spot-diff/</code> geladen.</span>
 				</div>
 			{:else if chaosType === 'wordle' || chaosType === 'hangman'}
 				<div class="field">

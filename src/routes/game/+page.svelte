@@ -384,7 +384,6 @@
 				<div class="chaos-row">
 					{#each gs.chaosCategory.questions as philQ}
 						{@const philTs = tileStatus(philQ.id)}
-						{@const typeIcon = philQ.chaosType === 'wordle' ? '🟩' : philQ.chaosType === 'hangman' ? '🪢' : '❓'}
 						<button
 							class="chaos-tile"
 							class:correct={philTs === 'correct'}
@@ -399,9 +398,7 @@
 							{:else if philTs === 'missed'}
 								<span class="tile-missed-icon">✗</span>
 							{:else}
-								<span class="chaos-tile-type">{typeIcon}</span>
 								<span class="chaos-tile-pts">{philQ.points}</span>
-								{#if philQ.timerEnabled}<span class="chaos-timer-badge">⏱</span>{/if}
 							{/if}
 						</button>
 					{/each}
@@ -686,8 +683,8 @@
 	.chaos-tile {
 		flex: 1;
 		min-width: 72px;
-		min-height: 80px;
-		border-radius: 0.85rem;
+		min-height: 48px;
+		border-radius: 999px;
 		border: 1.5px solid #b91c1c;
 		background: linear-gradient(160deg, #3b0a0a, #1e0505);
 		cursor: pointer;
@@ -698,7 +695,7 @@
 		gap: 0.2rem;
 		position: relative;
 		transition: transform 0.12s, box-shadow 0.12s, background 0.15s;
-		padding: 0.5rem 0.3rem;
+		padding: 0.35rem 0.3rem;
 	}
 
 	.chaos-tile.open:hover:not(:disabled) {

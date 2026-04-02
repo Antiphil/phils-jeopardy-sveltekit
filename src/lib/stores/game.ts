@@ -19,7 +19,7 @@ export type Question = {
 	image?: string;
 	timerEnabled?: boolean;
 	timerSeconds?: number;
-	chaosType?: 'question' | 'wordle' | 'hangman' | 'wheel';
+	chaosType?: 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff';
 };
 
 export type Category = {
@@ -104,8 +104,8 @@ function createGameStore() {
 				return cats.map((c) => ({
 					...c,
 					questions: c.questions.map((q) => {
-						// Wheel questions never get a timer
-						if (q.chaosType === 'wheel') return q;
+						// Wheel and SpotDiff questions never get a global timer
+						if (q.chaosType === 'wheel' || q.chaosType === 'spotdiff') return q;
 						// Per-question timer (chaos category) takes precedence
 						if (q.timerEnabled && q.timerSeconds) return q;
 						// Otherwise apply the global default
