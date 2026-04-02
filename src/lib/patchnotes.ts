@@ -6,24 +6,23 @@ export type PatchNote = {
 
 export const PATCHNOTES: PatchNote[] = [
 	{
-		version: '0.9',
+		version: '0.5.1',
 		date: '02.04.2026',
 		changes: [
 			{ type: 'new', text: 'Patchnotes-Button auf der Startseite' },
-			{ type: 'new', text: 'Versionsnummer im Logo (pulsiert mit dem Logo mit)' },
-			{ type: 'new', text: 'GitHub-Icon im Footer verlinkt auf das Repository' },
-			{ type: 'new', text: 'Scoreboard immer im Vordergrund — auch während einer Frage sichtbar' },
+			{ type: 'new', text: 'Versionsnummer auf Startseite' },
 			{ type: 'new', text: 'Standard-Timer global konfigurierbar in der Game-Config (Standard: 45 Sek.)' },
 			{ type: 'change', text: 'Chaos Wheel: Timer wird für das Glücksrad deaktiviert' },
 			{ type: 'change', text: 'Game-Config: ausgefüllte Chaos-Wheel-Felder zählen zur Veröffentlichungs-Bereitschaft' },
 			{ type: 'change', text: 'Scoreboard: Delta-Badge absolut mittig über der Karte positioniert, beeinflusst Breite nicht mehr' },
 			{ type: 'change', text: 'Spielboard-Topbar: Breite passt zum Board, mehr Abstand nach unten' },
+			{ type: 'fix', text: 'Scoreboard visibility fix' },
 			{ type: 'fix', text: 'Timer-Sekunden verschwanden nach dem Speichern (fehlende DB-Spalte)' },
 			{ type: 'fix', text: 'Globaler Timer wurde im Spiel ignoriert — eigener Wert wurde nicht übernommen' },
 		],
 	},
 	{
-		version: '0.8',
+		version: '0.5',
 		date: '02.04.2026',
 		changes: [
 			{ type: 'new', text: 'Chaos Wheel — Glücksrad mit zufälligen Effekten (Doppelte Punkte, Tausch, Aussetzen …)' },
@@ -39,7 +38,7 @@ export const PATCHNOTES: PatchNote[] = [
 		],
 	},
 	{
-		version: '0.7',
+		version: '0.4.3',
 		date: '01.04.2026',
 		changes: [
 			{ type: 'new', text: 'Per-Frage Timer in der Chaos Category mit Auto-Timeout' },
@@ -51,7 +50,7 @@ export const PATCHNOTES: PatchNote[] = [
 		],
 	},
 	{
-		version: '0.6',
+		version: '0.4.2',
 		date: '01.04.2026',
 		changes: [
 			{ type: 'new', text: 'Hardgecodetes Demo-Spiel mit 3 Boards, Chaos Category (DE+EN)' },
