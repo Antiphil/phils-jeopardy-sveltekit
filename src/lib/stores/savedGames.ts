@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { toast } from '$lib/stores/toast';
 
 export type ChaosType = 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff';
 
@@ -121,8 +122,12 @@ function createStore() {
 				if (res.ok) {
 					const games: SavedGame[] = await res.json();
 					set(games.map(migrateGame));
+				} else {
+					toast.error('Spiele konnten nicht geladen werden.');
+					set([]);
 				}
 			} catch {
+				toast.error('Verbindungsfehler beim Laden der Spiele.');
 				set([]);
 			}
 		},
@@ -143,40 +148,68 @@ function createStore() {
 				chaosEnabled: false,
 				isPublic: false,
 			};
-			const res = await fetch('/api/games', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(game),
-			});
-			const created: SavedGame = await res.json();
-			update((games) => [created, ...games]);
-			return created;
+			try {
+				const res = await fetch('/api/games', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(game),
+				});
+				if (!res.ok) throw new Error();
+				const created: SavedGame = await res.json();
+				update((games) => [created, ...games]);
+				toast.success('Spiel erstellt.');
+				return created;
+			} catch {
+				toast.error('Spiel konnte nicht erstellt werden.');
+				throw new Error('create failed');
+			}
 		},
 
 		async save(game: SavedGame): Promise<SavedGame> {
 			const updated: SavedGame = migrateGame({ ...game, updatedAt: new Date().toISOString() });
-			const res = await fetch(`/api/games/${updated.id}`, {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(updated),
-			});
-			const saved: SavedGame = await res.json();
-			update((games) => games.map((g) => (g.id === saved.id ? saved : g)));
-			return saved;
+			try {
+				const res = await fetch(`/api/games/${updated.id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(updated),
+				});
+				if (!res.ok) throw new Error();
+				const saved: SavedGame = await res.json();
+				update((games) => games.map((g) => (g.id === saved.id ? saved : g)));
+				toast.success('Spiel gespeichert.');
+				return saved;
+			} catch {
+				toast.error('Speichern fehlgeschlagen.');
+				throw new Error('save failed');
+			}
 		},
 
 		async delete(id: string): Promise<void> {
-			await fetch(`/api/games/${id}`, { method: 'DELETE' });
-			update((games) => games.filter((g) => g.id !== id));
+			try {
+				const res = await fetch(`/api/games/${id}`, { method: 'DELETE' });
+				if (!res.ok) throw new Error();
+				update((games) => games.filter((g) => g.id !== id));
+				toast.success('Spiel gelöscht.');
+			} catch {
+				toast.error('Löschen fehlgeschlagen.');
+				throw new Error('delete failed');
+			}
 		},
 
 		async togglePublic(id: string, isPublic: boolean): Promise<void> {
-			await fetch(`/api/games/${id}/publish`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ isPublic }),
-			});
-			update((games) => games.map((g) => (g.id === id ? { ...g, isPublic } : g)));
+			try {
+				const res = await fetch(`/api/games/${id}/publish`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ isPublic }),
+				});
+				if (!res.ok) throw new Error();
+				update((games) => games.map((g) => (g.id === id ? { ...g, isPublic } : g)));
+				toast.success(isPublic ? 'Spiel veröffentlicht.' : 'Spiel auf privat gesetzt.');
+			} catch {
+				toast.error('Sichtbarkeit konnte nicht geändert werden.');
+				throw new Error('togglePublic failed');
+			}
 		},
 	};
 }

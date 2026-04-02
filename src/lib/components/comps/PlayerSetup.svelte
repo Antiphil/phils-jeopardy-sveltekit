@@ -22,6 +22,7 @@
 	let nextId       = $state(3);
 	let openAvatarId: number | null = $state(null);
 	let dropdownPos = $state({ top: 0, left: 0 });
+	let showErrors = $state(false);
 
 	let teams: Team[] = $derived(
 		Array.from({ length: teamCount }, (_, i) => ({
@@ -51,7 +52,7 @@
 
 	function handleStart() {
 		const filled = players.filter(p => p.name.trim());
-		if (filled.length === 0) return;
+		if (filled.length === 0) { showErrors = true; return; }
 		onstart(filled, teamsEnabled ? teams : null);
 	}
 
@@ -98,10 +99,12 @@
 
 					<input
 						class="player-input"
+						class:input-error={showErrors && !player.name.trim()}
 						type="text"
 						placeholder={$t.playerSetup.playerName}
 						maxlength={20}
 						bind:value={player.name}
+						oninput={() => { if (showErrors && player.name.trim()) showErrors = false; }}
 					/>
 
 					{#if teamsEnabled && team}
@@ -180,6 +183,7 @@
 				class="btn-start"
 				onclick={handleStart}
 				disabled={players.filter(p => p.name.trim()).length === 0}
+				class:btn-shake={showErrors && players.filter(p => p.name.trim()).length === 0}
 			>
 				{$t.playerSetup.startGame}
 			</button>
@@ -363,6 +367,16 @@
 	}
 
 	.player-input::placeholder { color: #6b47a0; }
+
+	.player-input.input-error::placeholder { color: #f87171; }
+	.player-input.input-error { color: #f87171; }
+
+	@keyframes shake {
+		0%,100% { transform: translateX(0); }
+		20%,60% { transform: translateX(-5px); }
+		40%,80% { transform: translateX(5px); }
+	}
+	.btn-shake { animation: shake 0.35s ease; }
 
 	.team-badge {
 		font-family: 'Fredoka One', cursive;

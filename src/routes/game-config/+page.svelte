@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { savedGamesStore } from '$lib/stores/savedGames';
+	import { toast } from '$lib/stores/toast';
 	import type { SavedGame, QuestionConfig } from '$lib/stores/savedGames';
 	import CategoryEditor from '$lib/components/admin/CategoryEditor.svelte';
 	import ReadOnlyCategoryViewer from '$lib/components/admin/ReadOnlyCategoryViewer.svelte';
@@ -46,7 +47,9 @@ import { DEMO_GAME } from '$lib/demoGame';
 	let viewingDemo = $state(false);
 	let activeTab: Tab = $state('board1');
 	let editingLang: string = $state('');
-	let saved = $state(false);
+	let saving  = $state(false);
+	let creating = $state(false);
+	let nameError = $state(false);
 
 	// Keep editingLang in sync when languages change
 	$effect(() => {
@@ -71,22 +74,45 @@ import { DEMO_GAME } from '$lib/demoGame';
 	}
 
 	async function newGame() {
-		const created = await savedGamesStore.create($locale);
-		editing = structuredClone(created);
-		activeTab = 'board1';
+		if (creating) return;
+		creating = true;
+		try {
+			const created = await savedGamesStore.create($locale);
+			editing = structuredClone(created);
+			activeTab = 'board1';
+		} catch {
+			// toast already shown by store
+		} finally {
+			creating = false;
+		}
 	}
 
 	async function saveGame() {
-		if (!editing) return;
-		const result = await savedGamesStore.save(editing);
-		editing = structuredClone(result);
-		saved = true;
-		setTimeout(() => (saved = false), 1800);
+		if (!editing || saving) return;
+		if (!editing.name.trim()) {
+			toast.error('Bitte gib dem Spiel einen Namen.');
+			nameError = true;
+			return;
+		}
+		nameError = false;
+		saving = true;
+		try {
+			const result = await savedGamesStore.save(editing);
+			editing = structuredClone(result);
+		} catch {
+			// toast already shown by store
+		} finally {
+			saving = false;
+		}
 	}
 
 	async function deleteGame(id: string) {
-		await savedGamesStore.delete(id);
-		if (editing?.id === id) editing = null;
+		try {
+			await savedGamesStore.delete(id);
+			if (editing?.id === id) editing = null;
+		} catch {
+			// toast already shown by store
+		}
 	}
 </script>
 
@@ -101,7 +127,9 @@ import { DEMO_GAME } from '$lib/demoGame';
 	<aside class="sidebar">
 		<div class="sidebar-header">
 			<span class="sidebar-title">🎮 Spiele</span>
-			<button class="btn-new" onclick={newGame}>＋ Neu</button>
+			<button class="btn-new" onclick={newGame} disabled={creating}>
+			{creating ? '…' : '＋ Neu'}
+		</button>
 		</div>
 		<div class="game-list">
 			<DemoGameListItem active={viewingDemo} onselect={selectDemo} />
@@ -190,13 +218,15 @@ import { DEMO_GAME } from '$lib/demoGame';
 				<div class="topbar-row">
 					<input
 						class="game-name-input"
+						class:input-error={nameError}
 						type="text"
 						placeholder="Spielname…"
 						maxlength={48}
 						bind:value={editing.name}
+						oninput={() => { if (nameError && editing?.name.trim()) nameError = false; }}
 					/>
-					<button class="btn-save" class:saved onclick={saveGame}>
-						{#if saved}✓ Gespeichert{:else}💾 Speichern{/if}
+					<button class="btn-save" class:saving onclick={saveGame} disabled={saving}>
+						{saving ? '…' : '💾 Speichern'}
 					</button>
 				</div>
 				<div class="options-grid">
@@ -755,6 +785,8 @@ import { DEMO_GAME } from '$lib/demoGame';
 
 	.game-name-input:focus { border-color: #7c3aed; }
 	.game-name-input::placeholder { color: #4a2d7a; }
+	.game-name-input.input-error { border-color: #ef4444; }
+	.game-name-input.input-error::placeholder { color: #f87171; }
 
 	.btn-save {
 		font-family: 'Fredoka One', cursive;
@@ -770,9 +802,10 @@ import { DEMO_GAME } from '$lib/demoGame';
 		transition: background 0.3s, box-shadow 0.15s;
 	}
 
-	.btn-save.saved {
-		background: linear-gradient(135deg, #059669, #34d399);
-		box-shadow: 0 3px 12px rgba(52,211,153,0.35);
+		.btn-save.saving,
+	.btn-save:disabled {
+				opacity: 0.55;
+		cursor: default;
 	}
 
 	.btn-save:hover { opacity: 0.88; }

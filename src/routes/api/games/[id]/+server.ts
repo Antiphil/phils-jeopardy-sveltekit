@@ -5,6 +5,24 @@ import { savedGames } from '$lib/server/schema';
 import { and, eq } from 'drizzle-orm';
 import type { CategoryConfig, SavedGame } from '$lib/stores/savedGames';
 
+function validateGame(body: SavedGame) {
+	if (!body.name?.trim()) throw error(400, 'Spielname darf nicht leer sein');
+	const allQuestions = [
+		...body.board1.flatMap((c) => c.questions),
+		...body.board2.flatMap((c) => c.questions),
+		...(body.board3 ?? []).flatMap((c) => c.questions),
+		...body.chaosCategory.questions,
+	];
+	for (const q of allQuestions) {
+		if ((q.chaosType === 'wordle' || q.chaosType === 'hangman') && q.answer.trim().length < 2) {
+			throw error(400, 'Wordle/Hangman-Wörter müssen mindestens 2 Buchstaben haben');
+		}
+		if (q.timerEnabled && q.timerSeconds != null && (q.timerSeconds < 5 || q.timerSeconds > 300)) {
+			throw error(400, 'Timer muss zwischen 5 und 300 Sekunden liegen');
+		}
+	}
+}
+
 async function requireUserId(event: Parameters<RequestHandler>[0]): Promise<string> {
 	const session = await event.locals.auth();
 	if (!session?.user?.id) throw error(401, 'Nicht angemeldet');
@@ -32,31 +50,49 @@ function toSavedGame(row: typeof savedGames.$inferSelect): SavedGame {
 
 export const PUT: RequestHandler = async (event) => {
 	const userId = await requireUserId(event);
-	const body: SavedGame = await event.request.json();
-	const rows = await db
-		.update(savedGames)
-		.set({
-			name: body.name,
-			languages: body.languages ?? null,
-			boardCount: body.boardCount ?? 2,
-			defaultTimerSeconds: body.defaultTimerSeconds ?? 45,
-			board1: body.board1 as unknown as typeof savedGames.$inferInsert['board1'],
-			board2: body.board2 as unknown as typeof savedGames.$inferInsert['board2'],
-			board3: body.board3 as unknown as typeof savedGames.$inferInsert['board3'],
-			chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
-			chaosEnabled: body.chaosEnabled,
-			updatedAt: new Date(body.updatedAt),
-		})
-		.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, userId)))
-		.returning();
-	if (!rows.length) throw error(404, 'Nicht gefunden');
-	return json(toSavedGame(rows[0]));
+
+	let body: SavedGame;
+	try {
+		body = await event.request.json();
+	} catch {
+		throw error(400, 'Ungültige Anfrage');
+	}
+
+	validateGame(body);
+
+	try {
+		const rows = await db
+			.update(savedGames)
+			.set({
+				name: body.name,
+				languages: body.languages ?? null,
+				boardCount: body.boardCount ?? 2,
+				defaultTimerSeconds: body.defaultTimerSeconds ?? 45,
+				board1: body.board1 as unknown as typeof savedGames.$inferInsert['board1'],
+				board2: body.board2 as unknown as typeof savedGames.$inferInsert['board2'],
+				board3: body.board3 as unknown as typeof savedGames.$inferInsert['board3'],
+				chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
+				chaosEnabled: body.chaosEnabled,
+				updatedAt: new Date(body.updatedAt),
+			})
+			.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, userId)))
+			.returning();
+		if (!rows.length) throw error(404, 'Nicht gefunden');
+		return json(toSavedGame(rows[0]));
+	} catch (e: unknown) {
+		if (e && typeof e === 'object' && 'status' in e) throw e;
+		throw error(500, 'Spiel konnte nicht gespeichert werden');
+	}
 };
 
 export const DELETE: RequestHandler = async (event) => {
 	const userId = await requireUserId(event);
-	await db
-		.delete(savedGames)
-		.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, userId)));
-	return new Response(null, { status: 204 });
+	try {
+		await db
+			.delete(savedGames)
+			.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, userId)));
+		return new Response(null, { status: 204 });
+	} catch {
+		throw error(500, 'Spiel konnte nicht gelöscht werden');
+	}
 };

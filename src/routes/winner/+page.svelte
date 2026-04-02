@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { playWinnerFanfare } from '$lib/sounds';
 	import { t } from '$lib/i18n';
+	import { toast } from '$lib/stores/toast';
 
 	let gs = $derived($gameStore);
 
@@ -132,11 +133,18 @@
 		if (ratingDone || !gs?.savedGameId) return;
 		submittedRating = stars;
 		ratingDone = true;
-		await fetch(`/api/games/${gs.savedGameId}/rate`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ rating: stars }),
-		});
+		try {
+			const res = await fetch(`/api/games/${gs.savedGameId}/rate`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ rating: stars }),
+			});
+			if (!res.ok) throw new Error();
+			toast.success('Bewertung gespeichert. Danke!');
+		} catch {
+			toast.error('Bewertung konnte nicht gespeichert werden.');
+			ratingDone = false;
+		}
 	}
 
 	$effect(() => {

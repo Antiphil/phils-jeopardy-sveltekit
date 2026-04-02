@@ -2,6 +2,7 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.png';
 	import Navbar from '$lib/components/comps/Navbar.svelte';
+	import Toaster from '$lib/components/comps/Toaster.svelte';
 	import { browser } from '$app/environment';
 	import { savedGamesStore } from '$lib/stores/savedGames';
 	import { setGameUser } from '$lib/stores/game';
@@ -50,6 +51,7 @@
 </div>
 
 {@render children()}
+<Toaster />
 
 <footer class="legal-footer">
 	<a href="/privacy">{$t.layout.privacy}</a>

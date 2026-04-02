@@ -18,6 +18,8 @@
 	const isComplete = $derived(
 		chaosType === 'wheel' || chaosType === 'spotdiff'
 			? true
+			: chaosType === 'wordle' || chaosType === 'hangman'
+			? question.answer.trim().length >= 2
 			: !!question.question.trim() && !!question.answer.trim()
 	);
 
@@ -111,7 +113,9 @@
 							setA(val);
 						}}
 					/>
-					{#if question.answer}
+					{#if question.answer && question.answer.length < 2}
+						<span class="wordle-len-hint word-error">Mindestens 2 Buchstaben erforderlich</span>
+					{:else if question.answer}
 						<span class="wordle-len-hint">{question.answer.length} Buchstaben · {MAX_GUESSES} Versuche</span>
 					{/if}
 				</div>
@@ -410,4 +414,6 @@
 		color: #4ade80;
 		letter-spacing: 0.3px;
 	}
+
+	.wordle-len-hint.word-error { color: #f87171; }
 </style>

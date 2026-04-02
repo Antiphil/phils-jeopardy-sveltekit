@@ -6,6 +6,19 @@ export type PatchNote = {
 
 export const PATCHNOTES: PatchNote[] = [
 	{
+		version: '0.5.3',
+		date: '02.04.2026',
+		changes: [
+			{ type: 'new', text: 'Input-Validierung: Spielname, Wordle/Hangman-Wortlänge (min. 2 Buchstaben) und Timer — client- und serverseitig abgesichert' },
+			{ type: 'new', text: 'Spieler-Setup: Fehlermeldung mit Schüttelanimation wenn kein Spieler eingetragen wurde' },
+			{ type: 'new', text: 'Session-Limit-UX: Beim Erreichen des Limits pulsieren die aktiven Spiele amber und scrollen ins Bild' },
+			{ type: 'new', text: 'Toast-Benachrichtigungen: Erfolg, Fehler und Info mit Timer-Balken und Klick-zum-Schließen' },
+			{ type: 'new', text: 'Rate Limiting: Bewertungen sind auf 1 pro IP und Spiel pro Tag begrenzt' },
+			{ type: 'new', text: 'Fehlerseite: Eigene branded Error-Page für 401, 403, 404 und 500' },
+			{ type: 'new', text: 'Sitemap: /sitemap.xml mit lastmod, Cache-Headers und allen öffentlichen Seiten' },
+		],
+	},
+	{
 		version: '0.5.2',
 		date: '02.04.2026',
 		changes: [

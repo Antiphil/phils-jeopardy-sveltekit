@@ -8,6 +8,7 @@
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import { DEMO_GAME, DEMO_GAME_PLAYABLE } from '$lib/demoGame';
 	import { PATCHNOTES } from '$lib/patchnotes';
+	import { toast } from '$lib/stores/toast';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/logo.png';
@@ -41,8 +42,8 @@
 			goto('/game');
 		} catch (e) {
 			if ((e as Error).message === 'MAX_SESSIONS') {
-				maxSessionsError = true;
 				step = 'closed';
+				triggerMaxSessionsError();
 			}
 		}
 	}
@@ -53,8 +54,21 @@
 	}
 
 	async function discardSession(id: string) {
-		await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
-		sessions = sessions.filter((s) => s.id !== id);
+		try {
+			const res = await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+			if (!res.ok) throw new Error();
+			sessions = sessions.filter((s) => s.id !== id);
+			maxSessionsError = false;
+		} catch {
+			toast.error('Session konnte nicht gelöscht werden.');
+		}
+	}
+
+	let resumeCardsEl: HTMLDivElement | undefined = $state();
+
+	function triggerMaxSessionsError() {
+		maxSessionsError = true;
+		setTimeout(() => resumeCardsEl?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
 	}
 
 	function getSessionSummary(s: SessionInfo) {
@@ -111,13 +125,16 @@
 				<span class="version-tag">version {PATCHNOTES[0].version}</span>
 			</div>
 		</div>
-		<div class="resume-cards">
+		<div class="resume-cards" bind:this={resumeCardsEl}>
 			{#each sessions as session (session.id)}
 				{@const summary = getSessionSummary(session)}
-				<div class="resume-card">
+				<div class="resume-card" class:limit-reached={maxSessionsError}>
 					<div class="resume-header">
 						<span class="resume-icon">⏸️</span>
 						<span class="resume-title">{$t.home.runningGame}</span>
+						{#if maxSessionsError}
+							<span class="limit-hint">← Beende dieses Spiel</span>
+						{/if}
 					</div>
 					<div class="resume-info">
 						<span class="resume-players">{summary.names.join(' · ')}</span>
@@ -133,7 +150,7 @@
 					</div>
 					<div class="resume-actions">
 						<button class="btn-resume" onclick={() => resumeSession(session)}>{$t.home.resume}</button>
-						<button class="btn-discard" onclick={() => discardSession(session.id)}>{$t.home.discard}</button>
+						<button class="btn-discard" class:btn-discard-urgent={maxSessionsError} onclick={() => discardSession(session.id)}>{$t.home.discard}</button>
 					</div>
 				</div>
 			{/each}
@@ -476,6 +493,38 @@
 	.btn-discard:hover {
 		border-color: #f87171;
 		color: #f87171;
+	}
+
+	.resume-card.limit-reached {
+		border-color: #f59e0b;
+		box-shadow: 0 0 0 2px #f59e0b40, 0 0 32px rgba(245, 158, 11, 0.25);
+		animation: pop-in 0.3s ease-out, limit-pulse 1.8s ease-in-out infinite;
+	}
+
+	@keyframes limit-pulse {
+		0%, 100% { box-shadow: 0 0 0 2px #f59e0b40, 0 0 20px rgba(245, 158, 11, 0.2); }
+		50%       { box-shadow: 0 0 0 3px #f59e0b80, 0 0 36px rgba(245, 158, 11, 0.4); }
+	}
+
+	.limit-hint {
+		margin-left: auto;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #f59e0b;
+		letter-spacing: 0.3px;
+		white-space: nowrap;
+	}
+
+	.btn-discard-urgent {
+		border-color: #f59e0b !important;
+		color: #f59e0b !important;
+		font-weight: 800;
+	}
+
+	.btn-discard-urgent:hover {
+		border-color: #f87171 !important;
+		color: #f87171 !important;
+		background: rgba(248, 113, 113, 0.1);
 	}
 
 	.btn-patch { font-size: 1rem; padding: 0.6rem 1.4rem; }
