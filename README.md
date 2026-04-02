@@ -12,7 +12,7 @@
   ![Svelte](https://img.shields.io/badge/Svelte-5_Runes-FF3E00?logo=svelte&logoColor=white)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
   ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Drizzle_ORM-4169E1?logo=postgresql&logoColor=white)
-  ![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
+  ![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)
   ![License](https://img.shields.io/badge/license-UNLICENSED-lightgrey)
 </div>
 
@@ -68,7 +68,7 @@ A special category where each question is a different mini-game:
 | Database | PostgreSQL · Drizzle ORM |
 | Auth | Auth.js v1 (Discord OAuth) |
 | Styling | Scoped CSS + Tailwind CSS v4 |
-| Deployment | Docker · adapter-node · Cloudflare Tunnel |
+| Deployment | Docker · adapter-node |
 
 ---
 
@@ -126,33 +126,21 @@ npm run dev
 
 ## Deployment with Docker
 
-The repository includes a production-ready `docker-compose.yml` with the app, PostgreSQL, and Cloudflare Tunnel.
+The repository includes a production-ready `docker-compose.yml` with the app and PostgreSQL. The database schema is pushed automatically on every container start.
 
 ### 1. Fill in `.env`
 
 Copy `.env.example` to `.env` and fill in all values including:
 - `POSTGRES_PASSWORD` — password for the DB container
-- `CLOUDFLARE_TUNNEL_TOKEN` — token from the Cloudflare dashboard
 - `DATABASE_URL` — use `db` as the host: `postgresql://jeopardy:password@db:5432/phils_jeopardy`
 
-### 2. Configure the Cloudflare Tunnel
-
-1. [one.dash.cloudflare.com](https://one.dash.cloudflare.com) → Networks → Tunnels → Create Tunnel
-2. Connector type: **Docker**
-3. Copy the token into `.env` as `CLOUDFLARE_TUNNEL_TOKEN`
-4. Set the tunnel public hostname to route to `http://app:3000`
-
-### 3. Start everything
+### 2. Start everything
 
 ```bash
 docker compose up -d --build
 ```
 
-### 4. Push the database schema (first run only)
-
-```bash
-docker compose exec app npx drizzle-kit push
-```
+The app is now available at `http://<your-server-ip>:3000`.
 
 ### Updating
 
