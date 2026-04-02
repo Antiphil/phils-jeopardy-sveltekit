@@ -97,7 +97,7 @@ function migrateGame(raw: unknown): SavedGame {
 		chaosCategory: {
 			...chaos,
 			id: 'chaos',
-			name: chaos.name === 'Phil wie er will' ? 'Chaos Category' : chaos.name,
+			name: chaos.name,
 			questions: fixed,
 		},
 		chaosEnabled: game.chaosEnabled ?? false,

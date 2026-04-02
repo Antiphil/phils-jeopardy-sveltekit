@@ -46,6 +46,52 @@
 	let activeOriginalIndex = $derived(gs?.currentTurnIndex ?? 0);
 
 	let visible = $state(true);
+
+	// ── Animated display scores ───────────────────────────
+	let displayScores: Record<number, number> = {};
+	let displayScoresTick = $state(0); // increment to trigger re-render
+	let deltas = $state<Record<number, { value: number; key: number }>>({});
+	const intervals: Record<number, ReturnType<typeof setInterval>> = {};
+
+	function animateTo(id: number, target: number) {
+		const start = displayScores[id] ?? target;
+		if (start === target) return;
+
+		const delta = target - start;
+		deltas[id] = { value: delta, key: Date.now() + id };
+
+		if (intervals[id]) clearInterval(intervals[id]);
+
+		const steps = 24;
+		const stepMs = 800 / steps;
+		let step = 0;
+		intervals[id] = setInterval(() => {
+			step++;
+			const eased = 1 - Math.pow(1 - step / steps, 3);
+			displayScores[id] = Math.round(start + delta * eased);
+			displayScoresTick++;
+			if (step >= steps) {
+				clearInterval(intervals[id]);
+				delete intervals[id];
+				displayScores[id] = target;
+				displayScoresTick++;
+			}
+		}, stepMs);
+	}
+
+	// Watch only gs.scores for changes
+	$effect(() => {
+		const scores = gs?.scores;
+		if (!scores) return;
+		for (const [idStr, target] of Object.entries(scores)) {
+			const id = Number(idStr);
+			if (displayScores[id] === undefined) {
+				displayScores[id] = target; // init without animation
+			} else {
+				animateTo(id, target);
+			}
+		}
+	});
 </script>
 
 {#if gs && entries.length > 0}
@@ -108,12 +154,21 @@
 									? `color: ${entry.color}`
 									: ''}
 						>
-							{entry.score.toLocaleString()} pts
+							{(displayScoresTick, displayScores[entry.id] ?? entry.score).toLocaleString()} pts
 						</span>
 					</div>
 
 					{#if isActive}
 						<span class="dran-badge">{$t.scoreboard.turn}</span>
+					{/if}
+
+					{#if deltas[entry.id]}
+						{@const d = deltas[entry.id]}
+						{#key d.key}
+							<span class="delta-badge" class:delta-pos={d.value > 0} class:delta-neg={d.value < 0}>
+								{d.value > 0 ? '+' : ''}{d.value.toLocaleString()}
+							</span>
+						{/key}
 					{/if}
 				</div>
 			{/each}
@@ -129,7 +184,7 @@
 		left: 0;
 		width: 100%;
 		padding: 0.35rem 1.5rem 0.75rem;
-		z-index: 50;
+		z-index: 300;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -193,6 +248,7 @@
 			box-shadow 0.2s,
 			border-color 0.2s;
 		min-width: 140px;
+		position: relative;
 	}
 
 	.player-card.leading {
@@ -264,6 +320,39 @@
 		font-size: 0.72rem;
 		font-weight: 800;
 		color: #c084fc;
+	}
+
+	.delta-badge {
+		position: absolute;
+		bottom: calc(100% + 4px);
+		left: 50%;
+		transform: translateX(-50%);
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.82rem;
+		border-radius: 999px;
+		padding: 0.15rem 0.55rem;
+		white-space: nowrap;
+		pointer-events: none;
+		animation: delta-fly 1.8s ease-out forwards;
+	}
+
+	.delta-badge.delta-pos {
+		background: rgba(74, 222, 128, 0.2);
+		color: #4ade80;
+		border: 1px solid #16a34a;
+	}
+
+	.delta-badge.delta-neg {
+		background: rgba(248, 113, 113, 0.2);
+		color: #f87171;
+		border: 1px solid #b91c1c;
+	}
+
+	@keyframes delta-fly {
+		0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.8); }
+		15%  { opacity: 1; transform: translateX(-50%) translateY(-4px) scale(1.15); }
+		70%  { opacity: 1; transform: translateX(-50%) translateY(-14px) scale(1); }
+		100% { opacity: 0; transform: translateX(-50%) translateY(-26px) scale(0.85); }
 	}
 
 	.dran-badge {

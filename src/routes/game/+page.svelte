@@ -94,8 +94,9 @@
 			currentAnswererId = null;
 			wrongAnswerers = [];
 		} else {
-			// Wrong — deduct half points from the answerer
-			const deduction = Math.floor(activeQuestion.points / 2);
+			// Wrong — chaos category deducts full points, regular questions half
+			const isChaos = gs.chaosEnabled && gs.chaosCategory.questions.some(q => q.id === activeQuestion!.id);
+			const deduction = isChaos ? activeQuestion.points : Math.floor(activeQuestion.points / 2);
 			if (deduction > 0) gameStore.deductPoints(currentAnswererId, deduction, activeQuestion.id);
 
 			wrongAnswerers = [...wrongAnswerers, currentAnswererId];

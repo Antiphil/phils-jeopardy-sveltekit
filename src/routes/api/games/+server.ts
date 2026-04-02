@@ -40,9 +40,18 @@ export const GET: RequestHandler = async (event) => {
 	return json(rows.map(toSavedGame));
 };
 
+const PHIL_EMAIL = 'stehle@mailbox.org';
+
 export const POST: RequestHandler = async (event) => {
-	const userId = await requireUserId(event);
+	const session = await event.locals.auth();
+	if (!session?.user?.id) throw error(401, 'Nicht angemeldet');
+	const userId = session.user.id;
 	const body: SavedGame = await event.request.json();
+
+	const chaosCategory = session.user.email === PHIL_EMAIL
+		? { ...body.chaosCategory, name: 'Phil wie er will' }
+		: body.chaosCategory;
+
 	const rows = await db
 		.insert(savedGames)
 		.values({
@@ -55,7 +64,7 @@ export const POST: RequestHandler = async (event) => {
 			board1: body.board1 as unknown as typeof savedGames.$inferInsert['board1'],
 			board2: body.board2 as unknown as typeof savedGames.$inferInsert['board2'],
 			board3: body.board3 as unknown as typeof savedGames.$inferInsert['board3'],
-			chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
+			chaosCategory: chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
 			chaosEnabled: body.chaosEnabled,
 			createdAt: new Date(body.createdAt),
 			updatedAt: new Date(body.updatedAt),
