@@ -287,71 +287,55 @@
 	{/if}
 
 	<div class="game-page">
-		<!-- Current turn banner -->
-		{#if currentTurnEntry}
-			<div class="turn-banner">
-				<span class="turn-avatar">{currentTurnEntry.avatar}</span>
-				<span class="turn-text">
-					<span class="turn-name" style={`color: ${currentTurnEntry.color}`}
-						>{currentTurnEntry.name}</span
-					>
-					{$t.game.isTurn}
+		<!-- Top bar: round indicator + turn + actions -->
+		<div class="game-topbar">
+			<!-- Round display -->
+			<div class="round-indicator">
+				<span class="round-label">Runde</span>
+				<span class="round-nums">
+					{#each Array.from({ length: gs.boardCount }, (_, i) => i + 1) as n}
+						<span
+							class="round-pip"
+							class:active={gs.currentBoard === n}
+							class:done={n === 1 ? gs.board1Complete : n === 2 ? gs.board2Complete : false}
+						>{n}</span>
+					{/each}
 				</span>
+				<span class="round-of">von {gs.boardCount}</span>
 			</div>
-		{/if}
 
-		<!-- Board switcher -->
-		<div class="board-switcher">
-			<button
-				class="board-tab"
-				class:active={gs.currentBoard === 1}
-				onclick={() => gameStore.switchBoard(1)}
-			>
-				{$t.game.round1}
-				{#if gs.board1Complete}<span class="done-badge">✓</span>{/if}
-			</button>
-			<button
-				class="board-tab"
-				class:active={gs.currentBoard === 2}
-				onclick={() => gameStore.switchBoard(2)}
-				title={!gs.board1Complete ? $t.game.round1 : ''}
-			>
-				{$t.game.round2}
-				{#if !gs.board1Complete}<span class="lock-icon">🔒</span>{/if}
-			</button>
-			{#if gs.boardCount >= 3}
-				<button
-					class="board-tab board-tab-3"
-					class:active={gs.currentBoard === 3}
-					onclick={() => gameStore.switchBoard(3)}
-					title={!gs.board2Complete ? 'Runde 2 muss zuerst abgeschlossen werden' : ''}
-				>
-					Runde 3
-					{#if gs.board2Complete && !gs.board3Categories.flatMap(c => c.questions).every(q => gs.answered[q.id] !== undefined)}<span class=""></span>{/if}
-					{#if !gs.board2Complete}<span class="lock-icon">🔒</span>{/if}
-				</button>
+			<!-- Current turn -->
+			{#if currentTurnEntry}
+				<div class="turn-pill" style={`border-color: ${currentTurnEntry.color}60`}>
+					<span class="turn-avatar">{currentTurnEntry.avatar}</span>
+					<span class="turn-name" style={`color: ${currentTurnEntry.color}`}>{currentTurnEntry.name}</span>
+					<span class="turn-label">ist dran</span>
+				</div>
 			{/if}
-			<button
-				class="board-tab solutions-btn"
-				onclick={openSolutions}
-				title="Lösungen in neuem Fenster öffnen"
-			>
-				🗝️
-			</button>
-			<button
-				class="board-tab end-btn"
-				onclick={() => goto('/winner')}
-				title="Spiel beenden & Auswertung"
-			>
-				🏆
-			</button>
+
+			<!-- Actions (right-aligned) -->
+			<div class="topbar-actions">
+				<button class="action-btn" onclick={openSolutions} title="Lösungsboard öffnen">
+					<span class="action-icon">🗝️</span>
+					<span class="action-label">Lösungen</span>
+				</button>
+				<button class="action-btn action-end" onclick={() => goto('/winner')} title="Spiel beenden">
+					<span class="action-icon">🏆</span>
+					<span class="action-label">Beenden</span>
+				</button>
+			</div>
 		</div>
 
-		{#if gs.currentBoard === 2 && !gs.board1Complete}
-			<div class="locked-banner">{$t.game.lockedBanner}</div>
+		<!-- Next-round unlock banner -->
+		{#if gs.currentBoard === 1 && gs.board1Complete && gs.boardCount >= 2}
+			<div class="advance-banner" onclick={() => gameStore.switchBoard(2)} role="button" tabindex="0" onkeydown={() => {}}>
+				🎉 Runde 1 abgeschlossen — <strong>Runde 2 starten →</strong>
+			</div>
 		{/if}
-		{#if gs.currentBoard === 3 && !gs.board2Complete}
-			<div class="locked-banner">Runde 2 muss erst vollständig beantwortet werden.</div>
+		{#if gs.currentBoard === 2 && gs.board2Complete && gs.boardCount >= 3}
+			<div class="advance-banner" onclick={() => gameStore.switchBoard(3)} role="button" tabindex="0" onkeydown={() => {}}>
+				🎉 Runde 2 abgeschlossen — <strong>Runde 3 starten →</strong>
+			</div>
 		{/if}
 
 		<!-- Game board -->
@@ -433,108 +417,156 @@
 		padding: 1.25rem 1rem 1rem;
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 1.5rem;
 		position: relative;
 		z-index: 1;
 	}
 
-	/* ── Turn banner ────────────────────────────────────── */
-	.turn-banner {
+	/* ── Game topbar ────────────────────────────────────── */
+	.game-topbar {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 0.65rem;
+		background: #160930;
+		border: 1.5px solid #2a1050;
+		border-radius: 1rem;
+		padding: 0.5rem 0.85rem;
+		margin: 0 20px;
+	}
+
+	.round-indicator {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-shrink: 0;
+	}
+
+	.round-label {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #4a2d7a;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+	}
+
+	.round-nums {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.round-pip {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5rem;
 		font-family: 'Fredoka One', cursive;
-		font-size: 1rem;
-		color: #a78bca;
-		background: #1e0d38;
-		border: 1.5px solid #3d1a6e;
+		font-size: 0.82rem;
+		border: 1.5px solid #2a1050;
+		background: #0f0624;
+		color: #4a2d7a;
+		transition: all 0.2s;
+	}
+
+	.round-pip.active {
+		background: linear-gradient(135deg, #a855f7, #d946ef);
+		border-color: transparent;
+		color: white;
+		box-shadow: 0 2px 10px rgba(168, 85, 247, 0.5);
+	}
+
+	.round-pip.done {
+		background: #052e16;
+		border-color: #16a34a;
+		color: #4ade80;
+	}
+
+	.round-of {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #4a2d7a;
+	}
+
+	.turn-pill {
+		justify-self: center;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		border: 1px solid;
 		border-radius: 999px;
-		padding: 0.35rem 1.25rem;
-		width: fit-content;
-		margin: 0 auto;
+		padding: 0.2rem 0.7rem 0.2rem 0.45rem;
+		background: rgba(255,255,255,0.03);
 		animation: slide-in 0.25s ease-out;
 	}
 
 	@keyframes slide-in {
-		from {
-			opacity: 0;
-			transform: translateY(-6px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
+		from { opacity: 0; transform: translateY(-4px); }
+		to   { opacity: 1; transform: translateY(0); }
 	}
 
-	.turn-avatar {
-		font-size: 1.1rem;
-	}
+	.turn-avatar { font-size: 1rem; }
 
 	.turn-name {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.88rem;
 		font-weight: 900;
 	}
 
-	/* ── Board switcher ─────────────────────────────────── */
-	.board-switcher {
-		display: flex;
-		gap: 0.5rem;
-		justify-content: center;
+	.turn-label {
+		font-size: 0.72rem;
+		color: #4a2d7a;
+		font-weight: 600;
 	}
 
-	.board-tab {
-		font-family: 'Fredoka One', cursive;
-		font-size: 1rem;
-		padding: 0.45rem 1.6rem;
-		border-radius: 999px;
-		border: 1.5px solid #5b21b6;
-		background: #261040;
-		color: #a78bca;
-		cursor: pointer;
-		transition:
-			background 0.15s,
-			color 0.15s,
-			box-shadow 0.15s;
+	.topbar-actions {
+		display: flex;
+		gap: 0.4rem;
+		justify-content: flex-end;
+	}
+
+	.action-btn {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.3rem;
+		background: #1a0a30;
+		border: 1.5px solid #2a1050;
+		border-radius: 0.6rem;
+		color: #6b47a0;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.78rem;
+		padding: 0.3rem 0.65rem;
+		cursor: pointer;
+		transition: border-color 0.15s, color 0.15s;
+		flex-shrink: 0;
 	}
 
-	.board-tab:hover {
-		border-color: #a855f7;
-		color: #c084fc;
-	}
+	.action-btn:hover { border-color: #5b21b6; color: #a78bca; }
 
-	.board-tab.active {
-		background: linear-gradient(135deg, #a855f7, #d946ef);
-		border-color: transparent;
-		color: white;
-		box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
-	}
+	.action-end { border-color: #451a03; color: #92400e; }
+	.action-end:hover { border-color: #b45309; color: #fbbf24; }
 
-	.done-badge {
-		background: #34d399;
-		color: #052e16;
-		font-size: 0.7rem;
-		padding: 0.1rem 0.4rem;
-		border-radius: 999px;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 800;
-	}
+	.action-icon { font-size: 0.9rem; }
+	.action-label { font-size: 0.75rem; }
 
-	.lock-icon {
-		font-size: 0.85rem;
-	}
-
-	.locked-banner {
+	/* ── Advance banner ─────────────────────────────────── */
+	.advance-banner {
 		text-align: center;
 		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
-		color: #a78bca;
-		background: #261040;
-		border: 1.5px dashed #5b21b6;
+		color: #4ade80;
+		background: #052e16;
+		border: 1.5px solid #16a34a;
 		border-radius: 1rem;
 		padding: 0.6rem 1rem;
+		cursor: pointer;
+		transition: box-shadow 0.15s;
+		animation: slide-in 0.3s ease-out;
+	}
+
+	.advance-banner:hover {
+		box-shadow: 0 4px 18px rgba(74, 222, 128, 0.3);
 	}
 
 	/* ── Board grid ─────────────────────────────────────── */
@@ -880,17 +912,4 @@
 		}
 	}
 
-	.board-tab-3 { border-color: #7c2d12; color: #fb923c; }
-	.board-tab-3:hover { border-color: #ea580c; color: #fdba74; }
-	.board-tab-3.active { background: linear-gradient(135deg, #ea580c, #f97316); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(234,88,12,0.4); }
-
-	.end-btn {
-		border-color: #854d0e;
-		color: #fbbf24;
-	}
-
-	.end-btn:hover {
-		border-color: #fbbf24;
-		color: #fde68a;
-	}
 </style>

@@ -4,6 +4,5 @@
 - game libary user generated
 - chaos category geben volle pinus punktzahl
 - chaos category umbenennen in spielen die ich erstellt habe (phil wie er will)
-- timer für reguläre fragen im options menü einstellbar machen (timer soll nichts mit dem chaos timer zu tun haben)
 - gameboard runden indikator statt board 1,2,3. (runde 1 von 3)
 - schöneres und kompakteres menü im gameboard. gleiche höhe mit der anzeige welcher spieler dran ist. 
