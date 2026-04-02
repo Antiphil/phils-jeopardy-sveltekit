@@ -1,7 +1,10 @@
 {
 	"name": "phils-jeopardy",
+	"description": "A multiplayer Jeopardy game with custom boards, chaos category mini-games and real-time scoreboards.",
+	"author": "Philipp Stehle",
+	"license": "UNLICENSED",
 	"private": true,
-	"version": "0.2",
+	"version": "0.9.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",

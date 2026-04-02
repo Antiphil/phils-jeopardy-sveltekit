@@ -7,10 +7,13 @@
 	import type { Player, Team } from '$lib/stores/game';
 	import type { SavedGame } from '$lib/stores/savedGames';
 	import { DEMO_GAME, DEMO_GAME_PLAYABLE } from '$lib/demoGame';
+	import { PATCHNOTES } from '$lib/patchnotes';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/logo.png';
 	import { t } from '$lib/i18n';
+
+	let showPatchnotes = $state(false);
 
 	let { data }: { data: PageData } = $props();
 
@@ -103,7 +106,10 @@
 <div class="home">
 	<div class="hero">
 		<div class="logo-wrapper">
-			<img id="logo" src={logo} alt="logo">
+			<div class="logo-inner">
+				<img id="logo" src={logo} alt="logo">
+				<span class="version-tag">v{PATCHNOTES[0].version}</span>
+			</div>
 		</div>
 		<div class="resume-cards">
 			{#each sessions as session (session.id)}
@@ -142,9 +148,40 @@
 		<div class="hero-actions">
 			<button class="btn-primary" onclick={() => (step = 'players')}>{$t.home.newGame}</button>
 			<a class="btn-outline" href="/how-to-play">{$t.home.howToPlay}</a>
+			<button class="btn-outline btn-patch" onclick={() => (showPatchnotes = true)}>📋 Patchnotes</button>
 		</div>
 	</div>
 </div>
+
+{#if showPatchnotes}
+	<div class="pn-backdrop" role="button" tabindex="-1" onmousedown={(e) => { if (e.target === e.currentTarget) showPatchnotes = false; }} onkeydown={() => {}}>
+		<div class="pn-modal" role="dialog" aria-modal="true">
+			<div class="pn-header">
+				<span class="pn-title">📋 Patchnotes</span>
+				<button class="pn-close" onclick={() => (showPatchnotes = false)}>✕</button>
+			</div>
+			<div class="pn-body">
+				{#each PATCHNOTES as patch}
+					<div class="pn-version">
+						<div class="pn-version-header">
+							<span class="pn-ver-badge">v{patch.version}</span>
+							<span class="pn-ver-date">{patch.date}</span>
+						</div>
+						<ul class="pn-list">
+							{#each patch.changes as c}
+								<li class="pn-item pn-{c.type}">
+									<span class="pn-type-icon">{c.type === 'new' ? '✨' : c.type === 'fix' ? '🐛' : '⚡'}</span>
+									{c.text}
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
+
 
 <style>
 	.logo-wrapper {
@@ -176,6 +213,30 @@
 	z-index: -1;
 	}
 
+	.logo-inner {
+		position: relative;
+		width: fit-content;
+		display: flex;
+	}
+
+	.version-tag {
+		position: absolute;
+		bottom: 12%;
+		right: 6%;
+		animation: versionPulse 2.8s ease-in-out infinite;
+		transform-origin: center;
+		font-family: 'Fredoka One', cursive;
+		font-size: clamp(0.85rem, 1.8vw, 1.15rem);
+		background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
+		pointer-events: none;
+		user-select: none;
+		letter-spacing: 0.03em;
+	}
+
 	.logo-wrapper img {
 	width: min(90vw, 700px);
 	height: auto;
@@ -189,6 +250,11 @@
 	@keyframes logoPulse {
 	0%, 100% { transform: scale(1); }
 	50% { transform: scale(1.04); }
+	}
+
+	@keyframes versionPulse {
+	0%, 100% { transform: rotate(-20deg) scale(1); }
+	50% { transform: rotate(-20deg) scale(1.04); }
 	}
 
 	@keyframes glowPulse {
@@ -411,6 +477,125 @@
 		border-color: #f87171;
 		color: #f87171;
 	}
+
+	.btn-patch { font-size: 1rem; padding: 0.6rem 1.4rem; }
+
+	/* ── Patchnotes modal ───────────────────────────────── */
+	.pn-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(10, 4, 20, 0.82);
+		backdrop-filter: blur(8px);
+		z-index: 400;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+	}
+
+	.pn-modal {
+		background: #1e0d38;
+		border: 2px solid #5b21b6;
+		border-radius: 1.5rem;
+		width: 100%;
+		max-width: 540px;
+		max-height: 80vh;
+		display: flex;
+		flex-direction: column;
+		box-shadow: 0 8px 48px rgba(168, 85, 247, 0.4);
+		animation: pn-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes pn-pop {
+		from { opacity: 0; transform: scale(0.92) translateY(12px); }
+		to   { opacity: 1; transform: scale(1) translateY(0); }
+	}
+
+	.pn-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.1rem 1.5rem 0.85rem;
+		border-bottom: 1px solid #2a1050;
+		flex-shrink: 0;
+	}
+
+	.pn-title {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1.25rem;
+		color: #e2d0ff;
+	}
+
+	.pn-close {
+		background: #32155a;
+		border: 1px solid #5b21b6;
+		color: #a78bca;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 0.72rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.15s;
+	}
+
+	.pn-close:hover { background: #5b21b6; color: white; }
+
+	.pn-body {
+		overflow-y: auto;
+		padding: 1rem 1.5rem 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.pn-version-header {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-bottom: 0.6rem;
+	}
+
+	.pn-ver-badge {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.95rem;
+		background: linear-gradient(135deg, #a855f7, #d946ef);
+		color: white;
+		padding: 0.15rem 0.75rem;
+		border-radius: 999px;
+	}
+
+	.pn-ver-date {
+		font-size: 0.72rem;
+		color: #4a2d7a;
+		font-weight: 700;
+	}
+
+	.pn-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.pn-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		font-size: 0.83rem;
+		line-height: 1.4;
+		color: #c4b5fd;
+	}
+
+	.pn-type-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 0.05rem; }
+
+	.pn-item.pn-new  { color: #c4b5fd; }
+	.pn-item.pn-fix  { color: #86efac; }
+	.pn-item.pn-change { color: #fde68a; }
 
 	/* ── Sessions error ─────────────────────────────────── */
 	.sessions-error {
