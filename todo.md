@@ -2,6 +2,7 @@
 - none gamemaster mode wo alle spieler teilnehmen können 
     - auch ein online mode wo spieler übers internet miteinander spielen können
 - game libary user generated
-- chaos category geben volle pinus punktzahl
-- chaos category umbenennen in spielen die ich erstellt habe (phil wie er will)
+    - public game libary
+    - official game from admin trennen
+- patchnotes: bekannte bugs ganz oben einfügen
 - BUG: Wenn position im scoreboard wechselt werden über dem spielers der in der reihenfolge vertauscht war dessen punkte aber nicht berarbeitet werden weil er nie dran war trotzdem mit einem punke badge versehen und die animation abgespielt

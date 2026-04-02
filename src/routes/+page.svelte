@@ -108,7 +108,7 @@
 		<div class="logo-wrapper">
 			<div class="logo-inner">
 				<img id="logo" src={logo} alt="logo">
-				<span class="version-tag">v{PATCHNOTES[0].version}</span>
+				<span class="version-tag">version {PATCHNOTES[0].version}</span>
 			</div>
 		</div>
 		<div class="resume-cards">
@@ -238,7 +238,7 @@
 	}
 
 	.logo-wrapper img {
-	width: min(90vw, 700px);
+	width: min(50vw, 600px);
 	height: auto;
 	max-width: 100%;
 	display: block;
@@ -253,8 +253,8 @@
 	}
 
 	@keyframes versionPulse {
-	0%, 100% { transform: rotate(-20deg) scale(1); }
-	50% { transform: rotate(-20deg) scale(1.04); }
+	0%, 100% { transform: rotate(-30deg) scale(1); }
+	50% { transform: rotate(-30deg) scale(1.14); }
 	}
 
 	@keyframes glowPulse {
