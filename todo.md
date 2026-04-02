@@ -4,3 +4,4 @@
 - game libary user generated
 - chaos category geben volle pinus punktzahl
 - chaos category umbenennen in spielen die ich erstellt habe (phil wie er will)
+- BUG: Wenn position im scoreboard wechselt werden über dem spielers der in der reihenfolge vertauscht war dessen punkte aber nicht berarbeitet werden weil er nie dran war trotzdem mit einem punke badge versehen und die animation abgespielt

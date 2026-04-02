@@ -2,6 +2,7 @@
 	let activeSection = $state(0);
 
 	const sections = [
+		{ icon: '🎩', label: 'Gamemaster' },
 		{ icon: '🎯', label: 'Ziel' },
 		{ icon: '🗂️', label: 'Aufbau' },
 		{ icon: '🎮', label: 'Ablauf' },
@@ -22,7 +23,7 @@
 
 	<div class="hero">
 		<h1 class="title">How to Play</h1>
-		<p class="subtitle">Alles was du wissen musst — in unter 2 Minuten</p>
+		<p class="subtitle">Alles was du wissen musst — Schritt für Schritt</p>
 	</div>
 
 	<!-- Tab nav -->
@@ -37,8 +38,66 @@
 
 	<div class="content">
 
-		<!-- ─── 0: Ziel ─────────────────────────────────────── -->
+		<!-- ─── 0: Gamemaster ──────────────────────────────── -->
 		{#if activeSection === 0}
+			<section class="card-section">
+				<h2 class="section-title">🎩 Der Gamemaster</h2>
+				<p class="section-lead">Für Phil's Jeopardy braucht ihr genau eine Person, die das Spiel hostet: den <strong>Gamemaster</strong>.</p>
+
+				<div class="gm-visual">
+					<div class="gm-host-card">
+						<div class="gm-avatar">🎩</div>
+						<div class="gm-name">Gamemaster</div>
+						<div class="gm-role">öffnet das Spiel auf<br>seinem Gerät / Bildschirm</div>
+					</div>
+					<div class="gm-arrow">→</div>
+					<div class="gm-players">
+						<div class="gm-player">🧑 Anna</div>
+						<div class="gm-player">🧔 Ben</div>
+						<div class="gm-player">👩 Clara</div>
+						<div class="gm-player-more">+ weitere</div>
+					</div>
+				</div>
+
+				<div class="gm-duties">
+					<div class="gm-duty">
+						<span class="gd-icon">🖥️</span>
+						<div>
+							<div class="gd-title">Spiel hosten</div>
+							<div class="gd-desc">Der Gamemaster öffnet Phil's Jeopardy auf seinem Gerät — idealerweise am TV oder Beamer für alle sichtbar</div>
+						</div>
+					</div>
+					<div class="gm-duty">
+						<span class="gd-icon">📝</span>
+						<div>
+							<div class="gd-title">Spiel erstellen oder wählen</div>
+							<div class="gd-desc">Er kann ein eigenes Spiel in der Game-Config erstellen, oder ein öffentliches Spiel aus der Bibliothek nehmen</div>
+						</div>
+					</div>
+					<div class="gm-duty">
+						<span class="gd-icon">📖</span>
+						<div>
+							<div class="gd-title">Fragen vorlesen</div>
+							<div class="gd-desc">Der Gamemaster liest die Fragen laut vor — die Spieler antworten, er entscheidet und klickt ✓ oder ✗</div>
+						</div>
+					</div>
+					<div class="gm-duty">
+						<span class="gd-icon">🏆</span>
+						<div>
+							<div class="gd-title">Scoreboard verwalten</div>
+							<div class="gd-desc">Das Scoreboard ist immer sichtbar — Punkte werden automatisch nach jeder Bewertung aktualisiert</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="tip-box">
+					<span class="tip-icon">💡</span>
+					<span>Der Gamemaster spielt <strong>nicht</strong> selbst mit — er leitet das Spiel. Für kleinere Runden kann er aber mitspielen und sich selbst als Spieler eintragen.</span>
+				</div>
+			</section>
+
+		<!-- ─── 1: Ziel ─────────────────────────────────────── -->
+		{:else if activeSection === 1}
 			<section class="card-section">
 				<h2 class="section-title">🎯 Das Ziel</h2>
 				<p class="section-lead">Sammle so viele Punkte wie möglich, indem du Fragen richtig beantwortest.</p>
@@ -66,21 +125,27 @@
 
 				<div class="tip-box">
 					<span class="tip-icon">💡</span>
-					<span>Wer am Ende die meisten Punkte hat, <strong>gewinnt</strong>. Punkte können aber auch ins Minus gehen!</span>
+					<span>Wer am Ende die meisten Punkte hat, <strong>gewinnt</strong>. Punkte können aber auch ins Minus gehen — also nicht zu riskant antworten!</span>
+				</div>
+
+				<div class="info-row">
+					<div class="info-chip"><span>2–6 Spieler</span></div>
+					<div class="info-chip"><span>1–3 Runden</span></div>
+					<div class="info-chip"><span class="ic-icon">🎩</span><span>1 Gamemaster</span></div>
 				</div>
 			</section>
 
-		<!-- ─── 1: Aufbau ───────────────────────────────────── -->
-		{:else if activeSection === 1}
+		<!-- ─── 2: Aufbau ───────────────────────────────────── -->
+		{:else if activeSection === 2}
 			<section class="card-section">
 				<h2 class="section-title">🗂️ Der Spielaufbau</h2>
-				<p class="section-lead">Das Spiel besteht aus <strong>2 Runden</strong> und einer Sonderkategorie.</p>
+				<p class="section-lead">Das Spiel besteht aus <strong>1 bis 3 Runden</strong> mit je einem eigenen Board — plus optionaler Chaos Category.</p>
 
 				<div class="boards-visual">
 					<div class="board-preview">
 						<div class="bp-label">Runde 1</div>
 						<div class="bp-grid">
-							{#each ['Geo', 'Geschichte', 'Sport', '…'] as cat}
+							{#each ['Geo', 'Film', 'Sport', '…'] as cat}
 								<div class="bp-cat">{cat}</div>
 							{/each}
 							{#each [100,200,300,400,500] as pts}
@@ -109,43 +174,61 @@
 						<div class="bp-pts-label">200 · 400 · 600 · 800 · 1000 Pkt.</div>
 					</div>
 
-					<div class="phil-preview">
-						<div class="bp-label phil-lbl">🎲 Phil</div>
-						<div class="phil-tiles">
-							{#each [250,500,750,1000,'…'] as pts}
-								<div class="phil-tile">{pts}</div>
+					<div class="boards-arrow">→</div>
+
+					<div class="board-preview board-3">
+						<div class="bp-label">Runde 3</div>
+						<div class="bp-grid">
+							{#each ['Epik', 'Wissen', 'Misc', '…'] as cat}
+								<div class="bp-cat">{cat}</div>
+							{/each}
+							{#each [400,800,1200,1600,2000] as pts}
+								{#each [0,1,2,3] as _}
+									<div class="bp-tile bp-tile-3">{pts}</div>
+								{/each}
 							{/each}
 						</div>
-						<div class="bp-pts-label phil-pts-lbl">250er Schritte · 10 Aufgaben</div>
+						<div class="bp-pts-label">400 · 800 · 1200 · 1600 · 2000 Pkt.</div>
 					</div>
 				</div>
 
 				<div class="info-row">
-					<div class="info-chip">
-						<span>6 Kategorien pro Runde</span>
-					</div>
-					<div class="info-chip">
-						<span>5 Fragen pro Kategorie</span>
-					</div>
-					<div class="info-chip">
-						<span class="ic-icon">🔒</span>
-						<span>Runde 2 erst nach Runde 1</span>
-					</div>
+					<div class="info-chip"><span>6 Kategorien pro Runde</span></div>
+					<div class="info-chip"><span>5 Fragen pro Kategorie</span></div>
+					<div class="info-chip"><span class="ic-icon">🔒</span><span>Runden nur der Reihe nach</span></div>
+				</div>
+
+				<div class="tip-box">
+					<span class="tip-icon">🔒</span>
+					<span>Das nächste Board ist erst zugänglich, wenn die aktuelle Runde abgeschlossen ist. Niemand kann vorspulen!</span>
 				</div>
 			</section>
 
-		<!-- ─── 2: Ablauf ───────────────────────────────────── -->
-		{:else if activeSection === 2}
+		<!-- ─── 3: Ablauf ───────────────────────────────────── -->
+		{:else if activeSection === 3}
 			<section class="card-section">
 				<h2 class="section-title">🎮 Der Spielablauf</h2>
-				<p class="section-lead">Spieler sind abwechselnd dran und wählen eine Frage aus.</p>
+				<p class="section-lead">Spieler sind abwechselnd dran und wählen eine Frage aus — der Gamemaster bewertet.</p>
 
 				<div class="flow">
 					<div class="flow-step">
 						<div class="fs-num">1</div>
 						<div class="fs-content">
+							<div class="fs-title">Spieler einrichten</div>
+							<div class="fs-desc">Zu Beginn trägt der Gamemaster alle Spielernamen ein. Er kann auch Teams bilden — mehr dazu im Teams-Tab.</div>
+						</div>
+						<div class="fs-visual">
+							<div class="fv-turn">🧑 Anna  🧔 Ben</div>
+						</div>
+					</div>
+
+					<div class="flow-arrow">↓</div>
+
+					<div class="flow-step">
+						<div class="fs-num">2</div>
+						<div class="fs-content">
 							<div class="fs-title">Frage auswählen</div>
-							<div class="fs-desc">Der aktive Spieler klickt auf ein Feld — z.B. <em>Geschichte / 300</em></div>
+							<div class="fs-desc">Der aktive Spieler wählt ein Feld auf dem Board — z.B. <em>Geschichte / 300</em>. Die Auswahl liegt bei ihm.</div>
 						</div>
 						<div class="fs-visual">
 							<div class="fv-tile fv-open">300</div>
@@ -155,10 +238,10 @@
 					<div class="flow-arrow">↓</div>
 
 					<div class="flow-step">
-						<div class="fs-num">2</div>
+						<div class="fs-num">3</div>
 						<div class="fs-content">
 							<div class="fs-title">Frage wird vorgelesen</div>
-							<div class="fs-desc">Der Gamemaster liest die Frage laut vor. Alle dürfen antworten — aber nur der aktive Spieler ist zunächst dran.</div>
+							<div class="fs-desc">Der Gamemaster liest die Frage laut vor. Ein optionaler Timer läuft ab — bei Ablauf zählt die Frage als falsch.</div>
 						</div>
 						<div class="fs-visual">
 							<div class="fv-modal">
@@ -174,10 +257,10 @@
 					<div class="flow-arrow">↓</div>
 
 					<div class="flow-step">
-						<div class="fs-num">3</div>
+						<div class="fs-num">4</div>
 						<div class="fs-content">
-							<div class="fs-title">Bewertung</div>
-							<div class="fs-desc">Gamemaster klickt <strong class="correct-word">✓ Richtig</strong> oder <strong class="wrong-word">✗ Falsch</strong>. Bei Falsch können andere noch antworten.</div>
+							<div class="fs-title">Bewertung durch den Gamemaster</div>
+							<div class="fs-desc">Der Gamemaster klickt <strong class="correct-word">✓ Richtig</strong> oder <strong class="wrong-word">✗ Falsch</strong>. Bei Falsch können andere Spieler nachziehen und antworten.</div>
 						</div>
 						<div class="fs-visual fv-row">
 							<div class="fv-tile fv-done">✓</div>
@@ -188,10 +271,10 @@
 					<div class="flow-arrow">↓</div>
 
 					<div class="flow-step">
-						<div class="fs-num">4</div>
+						<div class="fs-num">5</div>
 						<div class="fs-content">
 							<div class="fs-title">Nächster Spieler</div>
-							<div class="fs-desc">Der Zug wechselt automatisch zum nächsten Spieler. Das Scoreboard zeigt wer dran ist.</div>
+							<div class="fs-desc">Der Zug wechselt automatisch. Das Scoreboard zeigt jederzeit wer dran ist — auch während eine Frage offen ist.</div>
 						</div>
 						<div class="fs-visual">
 							<div class="fv-turn">▶ Anna ist dran!</div>
@@ -200,33 +283,44 @@
 				</div>
 			</section>
 
-		<!-- ─── 3: Punkte ───────────────────────────────────── -->
-		{:else if activeSection === 3}
+		<!-- ─── 4: Punkte ───────────────────────────────────── -->
+		{:else if activeSection === 4}
 			<section class="card-section">
 				<h2 class="section-title">💥 Das Punktesystem</h2>
-				<p class="section-lead">Richtige Antworten bringen Punkte — falsche kosten welche.</p>
+				<p class="section-lead">Richtige Antworten bringen Punkte — falsche kosten welche. Die Chaos Category ist härter bestraft.</p>
 
 				<div class="points-visual">
 					<div class="pv-case correct-case">
 						<div class="pvc-icon">✓</div>
 						<div class="pvc-title">Richtig</div>
 						<div class="pvc-example">
-							<span class="pvc-q">300-Punkte-Frage</span>
+							<span class="pvc-q">300-Pkt-Frage</span>
 							<span class="pvc-arrow">→</span>
 							<span class="pvc-result pvc-plus">+300 Pkt.</span>
 						</div>
-						<div class="pvc-desc">Volle Punktzahl auf dein Konto</div>
+						<div class="pvc-desc">Volle Punktzahl gutgeschrieben</div>
 					</div>
 
 					<div class="pv-case wrong-case">
 						<div class="pvc-icon">✗</div>
-						<div class="pvc-title">Falsch</div>
+						<div class="pvc-title">Falsch (regulär)</div>
 						<div class="pvc-example">
-							<span class="pvc-q">300-Punkte-Frage</span>
+							<span class="pvc-q">300-Pkt-Frage</span>
 							<span class="pvc-arrow">→</span>
 							<span class="pvc-result pvc-minus">−150 Pkt.</span>
 						</div>
 						<div class="pvc-desc">Halbe Punktzahl wird abgezogen</div>
+					</div>
+
+					<div class="pv-case chaos-wrong-case">
+						<div class="pvc-icon">💥</div>
+						<div class="pvc-title">Falsch (Chaos)</div>
+						<div class="pvc-example">
+							<span class="pvc-q">500-Pkt-Aufgabe</span>
+							<span class="pvc-arrow">→</span>
+							<span class="pvc-result pvc-minus">−500 Pkt.</span>
+						</div>
+						<div class="pvc-desc">Volle Punktzahl wird abgezogen!</div>
 					</div>
 				</div>
 
@@ -243,65 +337,81 @@
 							<div class="rbs-badge correct-badge">✓ Richtig +300</div>
 						</div>
 					</div>
-					<div class="rb-note">Auch beim Nachziehen gilt: falsch = halbe Punkte abgezogen</div>
+					<div class="rb-note">Auch beim Nachziehen gilt: falsch = Abzug. Nur einer kann die volle Punktzahl bekommen.</div>
 				</div>
 
 				<div class="tip-box">
 					<span class="tip-icon">⚠️</span>
-					<span>Punkte können <strong>negativ</strong> werden! Riskante Antworten können das Spiel drehen.</span>
+					<span>Punkte können <strong>negativ</strong> werden! In der Chaos Category lieber zweimal überlegen — dort gibt es volle Minuspunkte.</span>
 				</div>
 			</section>
 
-		<!-- ─── 4: Phil ─────────────────────────────────────── -->
-		{:else if activeSection === 4}
-			<section class="card-section">
-				<h2 class="section-title">🎲 Chaos Category</h2>
-				<p class="section-lead">Eine Sonderkategorie die auf <strong>beiden</strong> Runden verfügbar ist — unabhängig vom Spielfortschritt.</p>
-
-				<div class="phil-visual">
-					<div class="phil-column-preview">
-						{#each [250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500] as pts}
-							<div class="pvt">{pts}</div>
-						{/each}
-					</div>
-					<div class="phil-rules">
-						<div class="phil-rule">
-							<span class="pr-icon">🎲</span>
-							<div>
-								<div class="pr-title">Eigene Aufgaben</div>
-								<div class="pr-desc">Der Gamemaster legt die Aufgaben selbst fest — alles ist erlaubt: Singen, Zeichnen, Fragen, Challenges</div>
-							</div>
-						</div>
-						<div class="phil-rule">
-							<span class="pr-icon">📅</span>
-							<div>
-								<div class="pr-title">Immer spielbar</div>
-								<div class="pr-desc">Chaos Category ist unabhängig von Runde 1 oder 2 — jederzeit anklickbar</div>
-							</div>
-						</div>
-						<div class="phil-rule">
-							<span class="pr-icon">📈</span>
-							<div>
-								<div class="pr-title">250er Schritte</div>
-								<div class="pr-desc">Von 250 bis 2500 Punkte — 10 Aufgaben mit steigendem Wert</div>
-							</div>
-						</div>
-						<div class="phil-rule">
-							<span class="pr-icon">✏️</span>
-							<div>
-								<div class="pr-title">In Game Settings editierbar</div>
-								<div class="pr-desc">Alle Aufgaben können in den Game Settings individuell angepasst werden</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-		<!-- ─── 5: Teams ────────────────────────────────────── -->
+		<!-- ─── 5: Chaos ────────────────────────────────────── -->
 		{:else if activeSection === 5}
 			<section class="card-section">
+				<h2 class="section-title">🎲 Chaos Category</h2>
+				<p class="section-lead">Eine Sonderkategorie, die auf <strong>allen Runden</strong> gleichzeitig sichtbar ist — mit vier verschiedenen Aufgabentypen.</p>
+
+				<div class="chaos-types">
+					<div class="ct-card ct-question">
+						<div class="ct-icon">❓</div>
+						<div class="ct-title">Freie Frage</div>
+						<div class="ct-desc">Eine normale Frage oder eine wilde Challenge — Singen, Zeichnen, Rätsel, alles möglich. Der Gamemaster legt den Inhalt selbst fest.</div>
+					</div>
+					<div class="ct-card ct-wordle">
+						<div class="ct-icon">🟩</div>
+						<div class="ct-title">Wordle</div>
+						<div class="ct-desc">Errate ein verstecktes Wort in bis zu 6 Versuchen. Grün = richtige Position, Gelb = im Wort aber falsch positioniert.</div>
+					</div>
+					<div class="ct-card ct-hangman">
+						<div class="ct-icon">🪢</div>
+						<div class="ct-title">Hangman</div>
+						<div class="ct-desc">Buchstabe für Buchstabe — errate das Wort bevor die Figur vollständig gezeichnet ist. Zu viele Fehler = Runde verloren.</div>
+					</div>
+					<div class="ct-card ct-wheel">
+						<div class="ct-icon">🎡</div>
+						<div class="ct-title">Chaos Wheel</div>
+						<div class="ct-desc">Das Glücksrad dreht sich und bestimmt einen zufälligen Effekt: Doppelte Punkte, Punktetausch, Aussetzen, Halbieren oder Bankrott!</div>
+					</div>
+				</div>
+
+				<div class="chaos-rules">
+					<div class="phil-rule">
+						<span class="pr-icon">📊</span>
+						<div>
+							<div class="pr-title">250er Schritte</div>
+							<div class="pr-desc">Von 250 bis 2500 Punkte — 10 Aufgaben mit steigendem Einsatz</div>
+						</div>
+					</div>
+					<div class="phil-rule">
+						<span class="pr-icon">💥</span>
+						<div>
+							<div class="pr-title">Volle Minuspunkte</div>
+							<div class="pr-desc">Wer eine Chaos-Aufgabe falsch beantwortet, verliert die <strong>volle</strong> Punktzahl — kein Rabatt</div>
+						</div>
+					</div>
+					<div class="phil-rule">
+						<span class="pr-icon">⏱️</span>
+						<div>
+							<div class="pr-title">Optionaler Timer</div>
+							<div class="pr-desc">Pro Aufgabe kann ein eigener Timer gesetzt werden — das Chaos Wheel ignoriert den Timer automatisch</div>
+						</div>
+					</div>
+					<div class="phil-rule">
+						<span class="pr-icon">📅</span>
+						<div>
+							<div class="pr-title">Immer spielbar</div>
+							<div class="pr-desc">Die Chaos Category ist unabhängig von Runde 1, 2 oder 3 — jederzeit anklickbar</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+		<!-- ─── 6: Teams ────────────────────────────────────── -->
+		{:else if activeSection === 6}
+			<section class="card-section">
 				<h2 class="section-title">👥 Teams</h2>
-				<p class="section-lead">Ihr könnt auch in Teams spielen — perfekt für größere Gruppen.</p>
+				<p class="section-lead">Ihr könnt auch in Teams spielen — perfekt für größere Gruppen oder wenn mehr als 6 Leute mitspielen möchten.</p>
 
 				<div class="teams-visual">
 					<div class="team-card" style="border-color: #a855f7">
@@ -330,7 +440,7 @@
 					</div>
 					<div class="tr-item">
 						<span class="tri-icon">💬</span>
-						<span>Das ganze Team darf beraten — einer antwortet</span>
+						<span>Das ganze Team darf beraten — einer antwortet für das Team</span>
 					</div>
 					<div class="tr-item">
 						<span class="tri-icon">⚙️</span>
@@ -340,6 +450,15 @@
 						<span class="tri-icon">🎨</span>
 						<span>Jedes Team bekommt eine eigene Farbe im Scoreboard</span>
 					</div>
+					<div class="tr-item">
+						<span class="tri-icon">💥</span>
+						<span>Chaos Category gilt für Teams genauso — volle Minuspunkte bei Falsch</span>
+					</div>
+				</div>
+
+				<div class="tip-box">
+					<span class="tip-icon">🎩</span>
+					<span>Der Gamemaster trägt die Teamnamen zu Spielbeginn ein. Danach läuft alles automatisch — Scoreboard und Zugreihenfolge inklusive.</span>
 				</div>
 			</section>
 		{/if}
@@ -479,7 +598,103 @@
 
 	.tip-icon { font-size: 1.1rem; flex-shrink: 0; }
 
-	/* ── 0: Goal visual ─────────────────────────────────── */
+	/* ── 0: Gamemaster ──────────────────────────────────── */
+	.gm-visual {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.gm-host-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		background: linear-gradient(135deg, #2d0a5e, #1a0638);
+		border: 2px solid #a855f7;
+		border-radius: 1rem;
+		padding: 1rem 1.5rem;
+		box-shadow: 0 0 18px rgba(168,85,247,0.25);
+	}
+
+	.gm-avatar { font-size: 2.2rem; }
+
+	.gm-name {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1rem;
+		color: #c084fc;
+	}
+
+	.gm-role {
+		font-size: 0.72rem;
+		color: #7c5faa;
+		text-align: center;
+		line-height: 1.4;
+	}
+
+	.gm-arrow {
+		font-size: 1.5rem;
+		color: #5b21b6;
+	}
+
+	.gm-players {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.gm-player {
+		background: #261040;
+		border: 1px solid #3d1a6e;
+		border-radius: 999px;
+		padding: 0.3rem 0.9rem;
+		font-size: 0.82rem;
+		color: #a78bca;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 700;
+	}
+
+	.gm-player-more {
+		font-size: 0.72rem;
+		color: #5b21b6;
+		text-align: center;
+		font-style: italic;
+	}
+
+	.gm-duties {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.gm-duty {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		background: #261040;
+		border: 1px solid #3d1a6e;
+		border-radius: 0.85rem;
+		padding: 0.75rem 1rem;
+	}
+
+	.gd-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+
+	.gd-title {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.92rem;
+		color: #e2d0ff;
+		margin-bottom: 0.1rem;
+	}
+
+	.gd-desc {
+		font-size: 0.78rem;
+		color: #7c5faa;
+		line-height: 1.4;
+	}
+
+	/* ── 1: Goal visual ─────────────────────────────────── */
 	.goal-visual {
 		display: flex;
 		align-items: center;
@@ -512,11 +727,11 @@
 		color: #5b21b6;
 	}
 
-	/* ── 1: Boards visual ───────────────────────────────── */
+	/* ── 2: Boards visual ───────────────────────────────── */
 	.boards-visual {
 		display: flex;
 		align-items: flex-start;
-		gap: 1rem;
+		gap: 0.75rem;
 		flex-wrap: wrap;
 		justify-content: center;
 	}
@@ -540,7 +755,7 @@
 
 	.bp-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 38px);
+		grid-template-columns: repeat(4, 34px);
 		gap: 3px;
 	}
 
@@ -548,12 +763,12 @@
 		background: linear-gradient(135deg, #3b1a6e, #261040);
 		border: 1px solid #5b21b6;
 		border-radius: 4px;
-		font-size: 0.55rem;
+		font-size: 0.5rem;
 		color: #c4a8e8;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		height: 20px;
+		height: 18px;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 	}
@@ -562,61 +777,31 @@
 		background: linear-gradient(135deg, #2d1260, #1e0d38);
 		border: 1px solid #5b21b6;
 		border-radius: 4px;
-		font-size: 0.5rem;
+		font-size: 0.45rem;
 		color: #e2d0ff;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		height: 18px;
+		height: 16px;
 		font-family: 'Fredoka One', cursive;
 	}
 
 	.bp-tile-2 { border-color: #7c3aed; color: #c4b5fd; }
+	.bp-tile-3 { border-color: #d946ef; color: #f0abfc; }
 
 	.bp-pts-label {
-		font-size: 0.6rem;
+		font-size: 0.55rem;
 		color: #5b21b6;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
 	}
 
 	.boards-arrow {
-		font-size: 1.5rem;
+		font-size: 1.3rem;
 		color: #5b21b6;
 		align-self: center;
 		padding-top: 1.5rem;
 	}
-
-	.phil-preview {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
-	.phil-lbl { background: #2d0505 !important; border-color: #ef4444 !important; color: #fca5a5 !important; }
-
-	.phil-tiles {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-	}
-
-	.pvt {
-		background: linear-gradient(135deg, #450a0a, #1e0d0d);
-		border: 1px solid #b91c1c;
-		border-radius: 4px;
-		font-size: 0.5rem;
-		color: #fca5a5;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 16px;
-		width: 60px;
-		font-family: 'Fredoka One', cursive;
-	}
-
-	.phil-pts-lbl { color: #b91c1c !important; }
 
 	.info-row {
 		display: flex;
@@ -641,7 +826,7 @@
 
 	.ic-icon { font-size: 0.9rem; }
 
-	/* ── 2: Flow ────────────────────────────────────────── */
+	/* ── 3: Flow ────────────────────────────────────────── */
 	.flow {
 		display: flex;
 		flex-direction: column;
@@ -752,7 +937,7 @@
 	.correct-word { color: #34d399; }
 	.wrong-word   { color: #f87171; }
 
-	/* ── 3: Points ──────────────────────────────────────── */
+	/* ── 4: Points ──────────────────────────────────────── */
 	.points-visual {
 		display: flex;
 		gap: 1rem;
@@ -761,7 +946,7 @@
 
 	.pv-case {
 		flex: 1;
-		min-width: 200px;
+		min-width: 160px;
 		border-radius: 1rem;
 		padding: 1.25rem;
 		display: flex;
@@ -771,8 +956,9 @@
 		text-align: center;
 	}
 
-	.correct-case { background: #052e16; border: 1.5px solid #34d399; }
-	.wrong-case   { background: #1c0505; border: 1.5px solid #f87171; }
+	.correct-case     { background: #052e16; border: 1.5px solid #34d399; }
+	.wrong-case       { background: #1c0505; border: 1.5px solid #f87171; }
+	.chaos-wrong-case { background: #1a0000; border: 1.5px solid #f97316; }
 
 	.pvc-icon  { font-size: 2rem; }
 	.pvc-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #e2d0ff; }
@@ -781,7 +967,9 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		font-size: 0.8rem;
+		font-size: 0.78rem;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 
 	.pvc-q     { color: #7c5faa; }
@@ -846,55 +1034,62 @@
 		font-style: italic;
 	}
 
-	/* ── 4: Phil ────────────────────────────────────────── */
-	.phil-visual {
-		display: flex;
-		gap: 1.5rem;
-		align-items: flex-start;
-		flex-wrap: wrap;
-	}
-
-	.phil-column-preview {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		flex-shrink: 0;
-	}
-
-	.pvt {
-		background: linear-gradient(135deg, #450a0a, #1e0d0d);
-		border: 1.5px solid #b91c1c;
-		border-radius: 999px;
-		font-family: 'Fredoka One', cursive;
-		font-size: 0.8rem;
-		color: #fca5a5;
-		padding: 0.25rem 0.85rem;
-		text-align: center;
-		width: 80px;
-	}
-
-	.phil-rules {
-		display: flex;
-		flex-direction: column;
+	/* ── 5: Chaos ───────────────────────────────────────── */
+	.chaos-types {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 		gap: 0.75rem;
-		flex: 1;
+	}
+
+	.ct-card {
+		border-radius: 1rem;
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		border: 1.5px solid;
+	}
+
+	.ct-question { background: #1c0838; border-color: #7c3aed; }
+	.ct-wordle   { background: #0a1f14; border-color: #34d399; }
+	.ct-hangman  { background: #1c1005; border-color: #fbbf24; }
+	.ct-wheel    { background: #1a0505; border-color: #f97316; }
+
+	.ct-icon  { font-size: 1.5rem; }
+
+	.ct-title {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.92rem;
+		color: #e2d0ff;
+	}
+
+	.ct-desc {
+		font-size: 0.75rem;
+		color: #7c5faa;
+		line-height: 1.4;
+	}
+
+	.chaos-rules {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
 	}
 
 	.phil-rule {
 		display: flex;
 		align-items: flex-start;
 		gap: 0.6rem;
-		background: #1a0505;
-		border: 1px solid #450a0a;
+		background: #261040;
+		border: 1px solid #3d1a6e;
 		border-radius: 0.75rem;
 		padding: 0.65rem 0.85rem;
 	}
 
 	.pr-icon  { font-size: 1.2rem; flex-shrink: 0; }
-	.pr-title { font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: #fca5a5; margin-bottom: 0.1rem; }
-	.pr-desc  { font-size: 0.75rem; color: #7c3a3a; line-height: 1.3; }
+	.pr-title { font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: #e2d0ff; margin-bottom: 0.1rem; }
+	.pr-desc  { font-size: 0.75rem; color: #7c5faa; line-height: 1.3; }
 
-	/* ── 5: Teams ───────────────────────────────────────── */
+	/* ── 6: Teams ───────────────────────────────────────── */
 	.teams-visual {
 		display: flex;
 		align-items: center;
