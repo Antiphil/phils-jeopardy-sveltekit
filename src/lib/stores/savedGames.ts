@@ -29,6 +29,7 @@ export type SavedGame = {
 	createdAt: string;
 	updatedAt: string;
 	boardCount?: 1 | 2 | 3; // default 2
+	defaultTimerSeconds?: number; // global default timer for all questions (0 = off)
 	board1: CategoryConfig[];
 	board2: CategoryConfig[];
 	board3: CategoryConfig[];
@@ -134,6 +135,7 @@ function createStore() {
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 				boardCount: 2,
+				defaultTimerSeconds: 45,
 				board1: makeBoard(1),
 				board2: makeBoard(2),
 				board3: makeBoard(3),

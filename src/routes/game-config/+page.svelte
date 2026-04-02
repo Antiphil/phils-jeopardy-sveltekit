@@ -5,7 +5,7 @@
 	import ReadOnlyCategoryViewer from '$lib/components/admin/ReadOnlyCategoryViewer.svelte';
 	import GameListItem from '$lib/components/admin/GameListItem.svelte';
 	import DemoGameListItem from '$lib/components/admin/DemoGameListItem.svelte';
-	import { DEMO_GAME } from '$lib/demoGame';
+import { DEMO_GAME } from '$lib/demoGame';
 	import { locale } from '$lib/i18n';
 	import type { PageData } from './$types';
 
@@ -261,6 +261,50 @@
 							<span class="opt-toggle-dot" class:on={editing.chaosEnabled}></span>
 							{editing.chaosEnabled ? '🎲 Aktiv' : '🎲 Deaktiviert'}
 						</button>
+					</div>
+
+					<div class="opt-row">
+						<div class="opt-label-with-hint">
+							<span class="opt-label">Standard-Timer</span>
+							<div class="hint-wrap">
+								<span class="hint-icon">?</span>
+								<div class="hint-tooltip">
+									Gilt für alle Fragen. Per-Frage-Timer in der Chaos Category überschreiben diesen Wert.
+								</div>
+							</div>
+						</div>
+						<div class="timer-default-row">
+							<label class="timer-toggle-label">
+								<input
+									type="checkbox"
+									class="timer-checkbox"
+									checked={(editing.defaultTimerSeconds ?? 45) > 0}
+									onchange={(e) => {
+										if (!editing) return;
+										const on = (e.target as HTMLInputElement).checked;
+										editing = { ...editing, defaultTimerSeconds: on ? 45 : 0 };
+									}}
+								/>
+								<span class="timer-toggle-text" class:on={(editing.defaultTimerSeconds ?? 45) > 0}>
+									{(editing.defaultTimerSeconds ?? 45) > 0 ? '⏱ Aktiv' : '⏱ Deaktiviert'}
+								</span>
+							</label>
+							{#if (editing.defaultTimerSeconds ?? 45) > 0}
+								<input
+									class="timer-seconds-input"
+									type="number"
+									min="5"
+									max="300"
+									value={editing.defaultTimerSeconds}
+									oninput={(e) => {
+										if (!editing) return;
+										const val = Math.max(5, Math.min(300, parseInt((e.target as HTMLInputElement).value) || 30));
+										editing = { ...editing, defaultTimerSeconds: val };
+									}}
+								/>
+								<span class="timer-seconds-unit">Sekunden</span>
+							{/if}
+						</div>
 					</div>
 
 					{#if data.isAdmin}
@@ -805,6 +849,60 @@
 		color: #4a2d7a;
 		margin-left: 0.35rem;
 		white-space: nowrap;
+	}
+
+	.timer-default-row {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		flex-wrap: wrap;
+	}
+
+	.timer-toggle-label {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		cursor: pointer;
+	}
+
+	.timer-checkbox {
+		width: 14px;
+		height: 14px;
+		accent-color: #ef4444;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	.timer-toggle-text {
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.82rem;
+		color: #4a2d7a;
+	}
+
+	.timer-toggle-text.on { color: #f87171; }
+
+	.timer-seconds-input {
+		width: 64px;
+		background: #261040;
+		border: 1.5px solid #7f1d1d;
+		border-radius: 0.4rem;
+		color: #fca5a5;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.85rem;
+		padding: 0.25rem 0.45rem;
+		text-align: center;
+		outline: none;
+	}
+
+	.timer-seconds-input:focus { border-color: #ef4444; }
+	.timer-seconds-input::-webkit-outer-spin-button,
+	.timer-seconds-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+	.timer-seconds-input[type=number] { -moz-appearance: textfield; }
+
+	.timer-seconds-unit {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #7f1d1d;
 	}
 
 	.tab-spacer { flex: 1; }

@@ -95,6 +95,25 @@ function createGameStore() {
 			} else {
 				players.forEach((p) => { scores[p.id] = 0; });
 			}
+
+			// Apply defaultTimerSeconds to all questions that don't have a per-question timer set.
+			// Per-question timers in the chaos category always take precedence.
+			const defaultSecs = savedGame?.defaultTimerSeconds ?? 45;
+			function applyTimer(cats: Category[]): Category[] {
+				if (!defaultSecs) return cats;
+				return cats.map((c) => ({
+					...c,
+					questions: c.questions.map((q) => {
+						// Wheel questions never get a timer
+						if (q.chaosType === 'wheel') return q;
+						// Per-question timer (chaos category) takes precedence
+						if (q.timerEnabled && q.timerSeconds) return q;
+						// Otherwise apply the global default
+						return { ...q, timerEnabled: true, timerSeconds: defaultSecs };
+					}),
+				}));
+			}
+
 			const state: GameState = {
 				players,
 				teams,
@@ -106,10 +125,10 @@ function createGameStore() {
 				boardCount: savedGame?.boardCount ?? 2,
 				board1Complete: false,
 				board2Complete: false,
-				board1Categories: (savedGame?.board1 as Category[]) ?? [],
-				board2Categories: (savedGame?.board2 as Category[]) ?? [],
-				board3Categories: (savedGame?.board3 as Category[]) ?? [],
-				chaosCategory: (savedGame?.chaosCategory as Category) ?? { id: 'chaos', name: 'Chaos Category', questions: [] },
+				board1Categories: applyTimer((savedGame?.board1 as Category[]) ?? []),
+				board2Categories: applyTimer((savedGame?.board2 as Category[]) ?? []),
+				board3Categories: applyTimer((savedGame?.board3 as Category[]) ?? []),
+				chaosCategory: applyTimer([(savedGame?.chaosCategory as Category) ?? { id: 'chaos', name: 'Chaos Category', questions: [] }])[0],
 				chaosEnabled: savedGame?.chaosEnabled ?? false,
 				currentTurnIndex: 0,
 				pendingSkips: [],

@@ -18,6 +18,7 @@ export const GET: RequestHandler = async () => {
 			name: row.name,
 			languages: (row.languages as string[] | null) ?? (row.language ? [row.language] : undefined),
 			boardCount: (row.boardCount ?? 2) as 1 | 2 | 3,
+			defaultTimerSeconds: row.defaultTimerSeconds ?? 45,
 			board1: row.board1 as CategoryConfig[],
 			board2: row.board2 as CategoryConfig[],
 			board3: (row.board3 as CategoryConfig[]) ?? [],

@@ -157,12 +157,13 @@
 			{/if}
 
 			{#if showTimer}
-				<div class="field timer-field">
+				<div class="field timer-field" class:timer-disabled={chaosType === 'wheel'}>
 					<label class="timer-toggle">
 						<input
 							type="checkbox"
 							class="timer-checkbox"
 							checked={question.timerEnabled ?? false}
+							disabled={chaosType === 'wheel'}
 							onchange={(e) => {
 								const enabled = (e.target as HTMLInputElement).checked;
 								question = { ...question, timerEnabled: enabled, timerSeconds: question.timerSeconds ?? 30 };
@@ -315,6 +316,11 @@
 		border-top: 1px solid #2a1050;
 		padding-top: 0.5rem;
 		gap: 0.4rem;
+	}
+
+	.timer-disabled {
+		opacity: 0.35;
+		pointer-events: none;
 	}
 
 	.timer-toggle {
