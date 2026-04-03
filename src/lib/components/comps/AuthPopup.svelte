@@ -6,8 +6,9 @@
 
 	let { onclose }: { onclose: () => void } = $props();
 
-	let session = $derived($page.data.session);
+	let session  = $derived($page.data.session);
 	let user     = $derived(session?.user ?? null);
+	let username = $derived(($page.data as { username?: string }).username ?? null);
 
 	function handleBackdrop(e: MouseEvent) {
 		if (e.target === e.currentTarget) onclose();
@@ -41,6 +42,14 @@
 			<div class="divider"></div>
 
 			<nav class="user-nav">
+				{#if username}
+					<a class="nav-link" href="/profile/{username}" onclick={onclose}>
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+						</svg>
+						Mein Profil
+					</a>
+				{/if}
 				<a class="nav-link" href="/" onclick={onclose}>
 					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -92,9 +101,10 @@
 					</button>
 				</form>
 
-				<!-- Google (coming soon) -->
-				<div class="google-wrapper">
-					<button class="provider-btn google-btn" type="button" disabled>
+				<!-- Google -->
+				<form method="POST" action="/signin" use:enhance>
+					<input type="hidden" name="providerId" value="google" />
+					<button class="provider-btn google-btn" type="submit">
 						<svg class="provider-logo" viewBox="0 0 24 24" fill="currentColor">
 							<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
 							<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -103,8 +113,7 @@
 						</svg>
 						<span>{$t.auth.signInWithGoogle}</span>
 					</button>
-					<span class="coming-soon-badge">{$t.auth.comingSoon}</span>
-				</div>
+				</form>
 
 			</div>
 
@@ -205,37 +214,11 @@
 		box-shadow: 0 3px 14px rgba(88, 101, 242, 0.45);
 	}
 
-	.google-wrapper {
-		position: relative;
-	}
-
 	.google-btn {
-		background: #1a1025;
-		color: #4a3d60;
-		border-color: #2d1a4a;
-		box-shadow: none;
-		cursor: not-allowed;
-		opacity: 0.55;
-	}
-
-	.google-btn:hover {
-		transform: none;
-		filter: none;
-	}
-
-	.coming-soon-badge {
-		position: absolute;
-		top: -6px;
-		right: 8px;
-		background: #3d1a6e;
-		color: #a78bca;
-		font-size: 0.6rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		padding: 0.1rem 0.45rem;
-		border-radius: 999px;
-		pointer-events: none;
+		background: white;
+		color: #3c3c3c;
+		border-color: #e0e0e0;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 	}
 
 	/* ── User nav ───────────────────────────────────────── */

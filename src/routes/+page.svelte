@@ -15,6 +15,8 @@
 	import { t } from '$lib/i18n';
 
 	let showPatchnotes = $state(false);
+	let menuView: 'main' | 'host' | 'join' = $state('main');
+	let roomCode = $state('');
 
 	let { data }: { data: PageData } = $props();
 
@@ -162,10 +164,114 @@
 			</div>
 		{/if}
 
-		<div class="hero-actions">
-			<button class="btn-primary" onclick={() => (step = 'players')}>{$t.home.newGame}</button>
-			<a class="btn-outline" href="/how-to-play">{$t.home.howToPlay}</a>
-			<button class="btn-outline btn-patch" onclick={() => (showPatchnotes = true)}>📋 Patchnotes</button>
+		<div class="menu-box">
+
+			{#if menuView === 'main'}
+				<div class="menu-view">
+
+					<!-- PRIMARY ACTIONS -->
+					<div class="primary-actions">
+						<button class="cta-host" onclick={() => menuView = 'host'}>
+							<div class="cta-glow"></div>
+							<span class="cta-icon">🎮</span>
+							<div class="cta-body">
+								<span class="cta-label">Hosten</span>
+								<span class="cta-sub">Runde erstellen</span>
+							</div>
+							<span class="cta-chevron">›</span>
+						</button>
+
+						<button class="cta-join" onclick={() => menuView = 'join'}>
+							<div class="cta-glow cta-glow-blue"></div>
+							<span class="cta-icon">🔗</span>
+							<div class="cta-body">
+								<span class="cta-label">Beitreten</span>
+								<span class="cta-sub">Raum betreten</span>
+							</div>
+							<span class="cta-chevron">›</span>
+						</button>
+					</div>
+
+					<!-- SECONDARY -->
+					<div class="secondary-actions">
+						<a class="sec-btn" href="/how-to-play">
+							<span class="sec-icon">📖</span>
+							<span>Spielanleitung</span>
+						</a>
+						<div class="sec-divider"></div>
+						<button class="sec-btn" onclick={() => (showPatchnotes = true)}>
+							<span class="sec-icon">📋</span>
+							<span>Patchnotes</span>
+						</button>
+						<div class="sec-divider"></div>
+						<button class="sec-btn sec-btn-disabled" disabled>
+							<span class="sec-icon">📷</span>
+							<span>QR Code scannen</span>
+						</button>
+						<!-- weitere Menüpunkte hier einfügen -->
+					</div>
+
+				</div>
+
+			{:else if menuView === 'host'}
+				<div class="menu-view">
+
+					<div class="sub-header">
+						<button class="back-btn" onclick={() => menuView = 'main'}>‹</button>
+						<span class="sub-title">Spielmodus wählen</span>
+					</div>
+
+					<div class="mode-list">
+						<button class="mode-card mode-gm" onclick={() => { menuView = 'main'; step = 'players'; }}>
+							<div class="mode-card-glow"></div>
+							<span class="mode-card-icon">🖥️</span>
+							<div class="mode-card-body">
+								<span class="mode-card-name">Gamemaster Mode</span>
+								<span class="mode-card-desc">Ein Bildschirm für alle — perfekt für Game Nights</span>
+							</div>
+							<span class="mode-card-arrow">›</span>
+						</button>
+
+						<button class="mode-card mode-online" disabled>
+							<span class="mode-card-icon mode-icon-dim">🌐</span>
+							<div class="mode-card-body">
+								<span class="mode-card-name mode-name-dim">Online Mode</span>
+								<span class="mode-card-desc mode-desc-dim">Jeder spielt auf seinem eigenen Gerät</span>
+							</div>
+							<span class="coming-soon-pill">Bald</span>
+						</button>
+					</div>
+
+				</div>
+
+			{:else if menuView === 'join'}
+				<div class="menu-view">
+
+					<div class="sub-header">
+						<button class="back-btn" onclick={() => menuView = 'main'}>‹</button>
+						<span class="sub-title">Raum beitreten</span>
+					</div>
+
+					<div class="join-body">
+						<div class="join-code-wrap">
+							<input
+								class="join-code-input"
+								type="text"
+								placeholder="RAUMCODE"
+								maxlength={8}
+								bind:value={roomCode}
+								disabled
+							/>
+							<button class="join-go" disabled>Los →</button>
+						</div>
+						<p class="join-note">
+							🚧 Online Mode ist in Entwicklung.<br/>Raumcodes werden dann hier funktionieren.
+						</p>
+					</div>
+
+				</div>
+			{/if}
+
 		</div>
 	</div>
 </div>
@@ -206,7 +312,7 @@
 	justify-content: center;
 	align-items: center;
 	width: 100%;
-	padding: clamp(1rem, 3vw, 3rem);
+	padding: clamp(0.4rem, 1.5vw, 1.5rem);
 	box-sizing: border-box;
 	position: relative; /* wichtig für das ::before */
 	}
@@ -255,7 +361,7 @@
 	}
 
 	.logo-wrapper img {
-	width: min(50vw, 600px);
+	width: min(46vw, 530px);
 	height: auto;
 	max-width: 100%;
 	display: block;
@@ -266,7 +372,7 @@
 
 	@keyframes logoPulse {
 	0%, 100% { transform: scale(1); }
-	50% { transform: scale(1.04); }
+	50% { transform: scale(1.01); }
 	}
 
 	@keyframes versionPulse {
@@ -276,7 +382,7 @@
 
 	@keyframes glowPulse {
 	0%, 100% { opacity: 0.5; transform: scale(0.9); }
-	50% { opacity: 1; transform: scale(1.15); }
+	50% { opacity: 1; transform: scale(1.10); }
 	}
 	.home {
 		min-height: calc(100vh - 70px);
@@ -318,59 +424,347 @@
 		font-weight: 600;
 	}
 
-	.hero-actions {
-		display: flex;
-		gap: 1rem;
-		justify-content: center;
-		flex-wrap: wrap;
+	/* ── Menu box ───────────────────────────────────────── */
+	.menu-box {
+		width: 100%;
+		max-width: 680px;
 	}
 
-	.btn-primary {
-		background: linear-gradient(135deg, #a855f7, #d946ef);
-		color: white;
-		font-family: 'Fredoka One', cursive;
-		font-size: 1.2rem;
-		padding: 0.75rem 2.5rem;
-		border-radius: 999px;
+	.menu-view {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		animation: view-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes view-in {
+		from { opacity: 0; transform: scale(0.96) translateY(8px); }
+		to   { opacity: 1; transform: scale(1) translateY(0); }
+	}
+
+	/* ── Primary CTA buttons ─────────────────────────── */
+	.primary-actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.6rem;
+	}
+
+	.cta-host, .cta-join {
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.9rem;
+		padding: 1.5rem 1.25rem;
+		border-radius: 1.1rem;
 		border: none;
 		cursor: pointer;
-		box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-		transition:
-			transform 0.15s,
-			box-shadow 0.15s;
+		text-align: left;
+		width: 100%;
+		overflow: hidden;
+		transition: transform 0.18s, box-shadow 0.18s;
 	}
 
-	.btn-primary:hover {
-		transform: translateY(-2px) scale(1.03);
-		box-shadow: 0 6px 20px rgba(217, 70, 239, 0.5);
+	.cta-host {
+		background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a855f7 100%);
+		box-shadow: 0 4px 24px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
 	}
 
-	.btn-primary:active {
-		transform: translateY(0) scale(0.98);
+	.cta-join {
+		background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 50%, #3b82f6 100%);
+		box-shadow: 0 4px 24px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
 	}
 
-	.btn-outline {
-		background: transparent;
-		border: 2px solid #5b21b6;
-		color: #c084fc;
+	.cta-host:hover {
+		transform: translateY(-3px) scale(1.02);
+		box-shadow: 0 8px 36px rgba(168,85,247,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
+	}
+
+	.cta-join:hover {
+		transform: translateY(-3px) scale(1.02);
+		box-shadow: 0 8px 36px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+	}
+
+	.cta-host:active, .cta-join:active { transform: translateY(-1px) scale(0.99); }
+
+	/* Animated glow blob */
+	.cta-glow {
+		position: absolute;
+		right: -20px;
+		top: -20px;
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+		animation: glow-spin 4s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	.cta-glow-blue {
+		background: radial-gradient(circle, rgba(147,197,253,0.2) 0%, transparent 70%);
+	}
+
+	@keyframes glow-spin {
+		0%, 100% { transform: scale(1) translate(0,0); }
+		50%       { transform: scale(1.4) translate(-8px, 8px); }
+	}
+
+	.cta-icon {
+		font-size: 2.2rem;
+		line-height: 1;
+		filter: drop-shadow(0 0 10px rgba(255,255,255,0.35));
+	}
+
+	.cta-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+	}
+
+	.cta-label {
 		font-family: 'Fredoka One', cursive;
-		font-size: 1.1rem;
-		padding: 0.6rem 1.8rem;
-		border-radius: 999px;
-		cursor: pointer;
-		transition:
-			border-color 0.15s,
-			color 0.15s,
-			box-shadow 0.15s;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
+		font-size: 1.35rem;
+		color: white;
+		line-height: 1.1;
+		text-shadow: 0 1px 4px rgba(0,0,0,0.3);
 	}
 
-	.btn-outline:hover {
+	.cta-sub {
+		font-size: 0.72rem;
+		color: rgba(255,255,255,0.6);
+		font-weight: 600;
+	}
+
+	.cta-chevron {
+		font-size: 1.8rem;
+		color: rgba(255,255,255,0.6);
+		margin-left: auto;
+		flex-shrink: 0;
+		transition: transform 0.18s, color 0.18s;
+	}
+
+	.cta-host:hover .cta-chevron,
+	.cta-join:hover .cta-chevron {
+		transform: translateX(4px);
+		color: white;
+	}
+
+	/* ── Secondary row ───────────────────────────────── */
+	.secondary-actions {
+		display: flex;
+		flex-wrap: wrap;
+		background: rgba(255,255,255,0.03);
+		border: 1px solid rgba(255,255,255,0.06);
+		border-radius: 0.9rem;
+		overflow: hidden;
+	}
+
+	/* Every sec-btn takes equal space, min 2 per row */
+	.sec-btn {
+		flex: 1 1 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		padding: 0.65rem 0.5rem;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.85rem;
+		color: #7c5faa;
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		text-decoration: none;
+		transition: background 0.15s, color 0.15s;
+		/* top border for items that wrap to a second row */
+		border-top: 1px solid rgba(255,255,255,0.06);
+	}
+
+	.sec-btn { border-top: none; }
+
+	.sec-btn:hover { background: rgba(168,85,247,0.1); color: #c084fc; }
+	.sec-btn-disabled { opacity: 0.35; cursor: not-allowed; }
+	.sec-btn-disabled:hover { background: transparent; color: #7c5faa; }
+
+	.sec-icon { font-size: 1rem; }
+
+	.sec-divider { width: 1px; background: rgba(255,255,255,0.06); flex-shrink: 0; align-self: stretch; }
+
+	/* ── Sub-view header ─────────────────────────────── */
+	.sub-header {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 0.2rem;
+	}
+
+	.back-btn {
+		background: rgba(255,255,255,0.06);
+		border: 1px solid rgba(255,255,255,0.1);
+		color: #a78bca;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 1.2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.back-btn:hover { background: rgba(168,85,247,0.2); color: white; }
+
+	.sub-title {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1rem;
+		color: #c084fc;
+	}
+
+	/* ── Mode cards (host view) ──────────────────────── */
+	.mode-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.mode-card {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.1rem;
+		border-radius: 1rem;
+		border: 1.5px solid transparent;
+		background: rgba(255,255,255,0.04);
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
+		overflow: hidden;
+		transition: border-color 0.18s, background 0.18s, transform 0.18s, box-shadow 0.18s;
+	}
+
+	.mode-gm { border-color: #5b21b6; }
+	.mode-gm:hover {
 		border-color: #a855f7;
-		color: #f0abfc;
-		box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+		background: rgba(168,85,247,0.12);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 24px rgba(168,85,247,0.25);
+	}
+
+	.mode-card-glow {
+		position: absolute;
+		left: 0; top: 0; bottom: 0;
+		width: 3px;
+		background: linear-gradient(to bottom, #a855f7, #d946ef);
+		border-radius: 999px 0 0 999px;
+	}
+
+	.mode-online {
+		border-color: rgba(255,255,255,0.06);
+		cursor: not-allowed;
+	}
+
+	.mode-card-icon { font-size: 1.6rem; flex-shrink: 0; }
+	.mode-icon-dim  { opacity: 0.3; }
+
+	.mode-card-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.mode-card-name {
+		font-family: 'Fredoka One', cursive;
+		font-size: 1rem;
+		color: #e2d0ff;
+	}
+
+	.mode-name-dim  { color: #3d2460; }
+
+	.mode-card-desc {
+		font-size: 0.68rem;
+		color: #6b47a0;
+		font-weight: 600;
+	}
+
+	.mode-desc-dim  { color: #2d1a4a; }
+
+	.mode-card-arrow {
+		font-size: 1.4rem;
+		color: #7c3aed;
+		flex-shrink: 0;
+		transition: transform 0.15s;
+	}
+
+	.mode-gm:hover .mode-card-arrow { transform: translateX(4px); color: #c084fc; }
+
+	.coming-soon-pill {
+		font-size: 0.6rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		color: #3d1a6e;
+		background: #1a0d30;
+		border: 1px solid #3d1a6e;
+		padding: 0.2rem 0.6rem;
+		border-radius: 999px;
+		flex-shrink: 0;
+	}
+
+	/* ── Join view ───────────────────────────────────── */
+	.join-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.join-code-wrap {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.join-code-input {
+		flex: 1;
+		background: rgba(255,255,255,0.04);
+		border: 1.5px solid rgba(255,255,255,0.08);
+		border-radius: 0.85rem;
+		color: #4a2d7a;
+		font-family: 'Fredoka One', cursive;
+		font-size: 1.15rem;
+		letter-spacing: 0.25em;
+		text-align: center;
+		padding: 0.65rem 1rem;
+		outline: none;
+		cursor: not-allowed;
+	}
+
+	.join-code-input::placeholder { color: #2d1a4a; }
+
+	.join-go {
+		background: rgba(255,255,255,0.04);
+		border: 1.5px solid rgba(255,255,255,0.08);
+		border-radius: 0.85rem;
+		color: #3d1a6e;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.85rem;
+		padding: 0 1rem;
+		cursor: not-allowed;
+		white-space: nowrap;
+	}
+
+	.join-note {
+		font-size: 0.72rem;
+		color: #3d1a6e;
+		font-weight: 600;
+		text-align: center;
+		margin: 0;
+		line-height: 1.6;
+		background: rgba(255,255,255,0.02);
+		border: 1px dashed rgba(255,255,255,0.05);
+		border-radius: 0.75rem;
+		padding: 0.65rem 0.85rem;
 	}
 
 	/* ── Resume cards ───────────────────────────────────── */
@@ -527,7 +921,6 @@
 		background: rgba(248, 113, 113, 0.1);
 	}
 
-	.btn-patch { font-size: 1rem; padding: 0.6rem 1.4rem; }
 
 	/* ── Patchnotes modal ───────────────────────────────── */
 	.pn-backdrop {

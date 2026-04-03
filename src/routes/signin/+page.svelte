@@ -27,9 +27,10 @@
 				</button>
 			</form>
 
-			<!-- Google (coming soon) -->
-			<div class="google-wrapper">
-				<button class="provider-btn google-btn" type="button" disabled>
+			<!-- Google -->
+			<form method="POST" use:enhance>
+				<input type="hidden" name="providerId" value="google" />
+				<button class="provider-btn google-btn" type="submit">
 					<svg class="provider-logo" viewBox="0 0 24 24" fill="currentColor">
 						<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
 						<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -38,8 +39,7 @@
 					</svg>
 					<span>Mit Google anmelden</span>
 				</button>
-				<span class="coming-soon-badge">Demnächst</span>
-			</div>
+			</form>
 
 		</div>
 
@@ -146,37 +146,11 @@
 		box-shadow: 0 4px 16px rgba(88, 101, 242, 0.45);
 	}
 
-	.google-wrapper {
-		position: relative;
-	}
-
 	.google-btn {
-		background: #1a1025;
-		color: #4a3d60;
-		border-color: #2d1a4a;
-		box-shadow: none;
-		cursor: not-allowed;
-		opacity: 0.55;
-	}
-
-	.google-btn:hover {
-		transform: none;
-		filter: none;
-	}
-
-	.coming-soon-badge {
-		position: absolute;
-		top: -7px;
-		right: 12px;
-		background: #3d1a6e;
-		color: #a78bca;
-		font-size: 0.62rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		padding: 0.1rem 0.5rem;
-		border-radius: 999px;
-		pointer-events: none;
+		background: white;
+		color: #3c3c3c;
+		border-color: #e0e0e0;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 	}
 
 	.privacy-note {

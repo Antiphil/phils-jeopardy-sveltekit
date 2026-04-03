@@ -2,6 +2,7 @@ import { pgTable, text, boolean, jsonb, timestamp, integer } from 'drizzle-orm/p
 export const users = pgTable('users', {
 	id: text('id').primaryKey(),
 	name: text('name'),
+	username: text('username').unique(),
 	email: text('email'),
 	image: text('image'),
 	isAdmin: boolean('is_admin').notNull().default(false),
