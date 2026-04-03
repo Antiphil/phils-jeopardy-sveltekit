@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PlayerSetup from '$lib/components/comps/PlayerSetup.svelte';
 	import GameSelect from '$lib/components/comps/GameSelect.svelte';
+	import { gameTransition } from '$lib/stores/gameTransition';
 	import { gameStore } from '$lib/stores/game';
 	import type { GameState } from '$lib/stores/game';
 	import { goto } from '$app/navigation';
@@ -41,6 +42,7 @@
 		try {
 			await gameStore.start(pendingPlayers, pendingTeams, game);
 			step = 'closed';
+			gameTransition.set(true);
 			goto('/game');
 		} catch (e) {
 			if ((e as Error).message === 'MAX_SESSIONS') {
@@ -52,6 +54,7 @@
 
 	function resumeSession(session: SessionInfo) {
 		gameStore.resume(session.state, session.id);
+		gameTransition.set(true);
 		goto('/game');
 	}
 
@@ -118,6 +121,7 @@
 		onstart={onGameSelected}
 	/>
 {/if}
+
 
 <div class="home">
 	<div class="hero">

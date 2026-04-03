@@ -4,6 +4,8 @@
 	import Navbar from '$lib/components/comps/Navbar.svelte';
 	import Toaster from '$lib/components/comps/Toaster.svelte';
 	import UsernameSetup from '$lib/components/comps/UsernameSetup.svelte';
+	import GameLoadingTransition from '$lib/components/comps/GameLoadingTransition.svelte';
+	import { gameTransition } from '$lib/stores/gameTransition';
 	import { browser } from '$app/environment';
 	import { savedGamesStore } from '$lib/stores/savedGames';
 	import { setGameUser } from '$lib/stores/game';
@@ -58,6 +60,10 @@
 
 {@render children()}
 <Toaster />
+
+{#if $gameTransition}
+	<GameLoadingTransition ondone={() => gameTransition.set(false)} />
+{/if}
 
 {#if showUsernameModal}
 	<UsernameSetup ondone={() => { hasUsername = true; }} />
