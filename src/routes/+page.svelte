@@ -556,8 +556,8 @@
 	.secondary-actions {
 		display: flex;
 		flex-wrap: wrap;
-		background: rgba(255,255,255,0.03);
-		border: 1px solid rgba(255,255,255,0.06);
+		background: #130825;
+		border: 1px solid #2a1150;
 		border-radius: 0.9rem;
 		overflow: hidden;
 	}
@@ -579,18 +579,18 @@
 		text-decoration: none;
 		transition: background 0.15s, color 0.15s;
 		/* top border for items that wrap to a second row */
-		border-top: 1px solid rgba(255,255,255,0.06);
+		border-top: 1px solid #2a1150;
 	}
 
 	.sec-btn { border-top: none; }
 
-	.sec-btn:hover { background: rgba(168,85,247,0.1); color: #c084fc; }
+	.sec-btn:hover { background: #261040; color: #c084fc; }
 	.sec-btn-disabled { opacity: 0.35; cursor: not-allowed; }
 	.sec-btn-disabled:hover { background: transparent; color: #7c5faa; }
 
 	.sec-icon { font-size: 1rem; }
 
-	.sec-divider { width: 1px; background: rgba(255,255,255,0.06); flex-shrink: 0; align-self: stretch; }
+	.sec-divider { width: 1px; background: #2a1150; flex-shrink: 0; align-self: stretch; }
 
 	/* ── Sub-view header ─────────────────────────────── */
 	.sub-header {
@@ -601,8 +601,8 @@
 	}
 
 	.back-btn {
-		background: rgba(255,255,255,0.06);
-		border: 1px solid rgba(255,255,255,0.1);
+		background: #261040;
+		border: 1px solid #3d1a6e;
 		color: #a78bca;
 		width: 32px;
 		height: 32px;
@@ -639,7 +639,7 @@
 		padding: 1rem 1.1rem;
 		border-radius: 1rem;
 		border: 1.5px solid transparent;
-		background: rgba(255,255,255,0.04);
+		background: #130825;
 		cursor: pointer;
 		text-align: left;
 		width: 100%;
@@ -650,7 +650,7 @@
 	.mode-gm { border-color: #5b21b6; }
 	.mode-gm:hover {
 		border-color: #a855f7;
-		background: rgba(168,85,247,0.12);
+		background: #2d1260;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 24px rgba(168,85,247,0.25);
 	}

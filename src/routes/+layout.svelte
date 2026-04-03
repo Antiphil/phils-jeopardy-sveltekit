@@ -15,6 +15,26 @@
 
 	let { children, data }: { children: import('svelte').Snippet; data: LayoutData } = $props();
 
+	const bgParticles = [
+		{ emoji: '🎯', left: 4,  delay: 0,    dur: 9,  size: 1.4, opacity: 0.07 },
+		{ emoji: '⭐', left: 11, delay: 2.1,  dur: 11, size: 1.1, opacity: 0.06 },
+		{ emoji: '🏆', left: 19, delay: 0.7,  dur: 8,  size: 1.6, opacity: 0.08 },
+		{ emoji: '🎲', left: 27, delay: 3.4,  dur: 10, size: 1.2, opacity: 0.07 },
+		{ emoji: '💡', left: 35, delay: 1.2,  dur: 12, size: 1.0, opacity: 0.06 },
+		{ emoji: '❓', left: 43, delay: 4.8,  dur: 9,  size: 1.5, opacity: 0.08 },
+		{ emoji: '🎉', left: 51, delay: 0.4,  dur: 10, size: 1.1, opacity: 0.07 },
+		{ emoji: '💎', left: 58, delay: 2.9,  dur: 8,  size: 1.3, opacity: 0.06 },
+		{ emoji: '🎮', left: 66, delay: 1.7,  dur: 11, size: 1.2, opacity: 0.08 },
+		{ emoji: '🔥', left: 74, delay: 5.2,  dur: 9,  size: 1.0, opacity: 0.07 },
+		{ emoji: '✨', left: 82, delay: 3.0,  dur: 12, size: 1.4, opacity: 0.06 },
+		{ emoji: '🎊', left: 90, delay: 1.5,  dur: 10, size: 1.1, opacity: 0.07 },
+		{ emoji: '🃏', left: 8,  delay: 6.1,  dur: 11, size: 1.3, opacity: 0.06 },
+		{ emoji: '🪄', left: 23, delay: 4.0,  dur: 9,  size: 1.0, opacity: 0.07 },
+		{ emoji: '🎭', left: 47, delay: 7.3,  dur: 10, size: 1.2, opacity: 0.06 },
+		{ emoji: '🎪', left: 70, delay: 2.5,  dur: 8,  size: 1.5, opacity: 0.07 },
+		{ emoji: '📺', left: 87, delay: 5.8,  dur: 12, size: 1.1, opacity: 0.06 },
+	];
+
 	let hasUsername = $state(data.hasUsername);
 	$effect(() => { hasUsername = data.hasUsername; });
 
@@ -56,6 +76,15 @@
 	<div class="blob blob-3"></div>
 	<div class="blob blob-4"></div>
 	<div class="blob blob-5"></div>
+</div>
+
+<div class="bg-particles" aria-hidden="true">
+	{#each bgParticles as p}
+		<span
+			class="bg-particle"
+			style="left:{p.left}%; animation-delay:{p.delay}s; animation-duration:{p.dur}s; font-size:{p.size}rem; opacity:{p.opacity};"
+		>{p.emoji}</span>
+	{/each}
 </div>
 
 {@render children()}
@@ -180,6 +209,26 @@
 		0%   { transform: translate(0, 0) scale(1); opacity: 0.8; }
 		50%  { transform: translate(-90px, 70px) scale(1.3); opacity: 1; }
 		100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+	}
+
+	.bg-particles {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		z-index: 0;
+		overflow: hidden;
+	}
+
+	.bg-particle {
+		position: absolute;
+		bottom: -2rem;
+		user-select: none;
+		animation: bg-float linear infinite;
+	}
+
+	@keyframes bg-float {
+		0%   { transform: translateY(0) rotate(0deg);   }
+		100% { transform: translateY(-110vh) rotate(180deg); }
 	}
 
 	.legal-footer {
