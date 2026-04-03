@@ -4,7 +4,7 @@
   <br/>
   <br/>
 
-  **Play live: [antiphil.de](https://www.antiphil.de)**
+  **Play live: [jeopardy.homephil.de](https://www.jeopardy.homephil.de)**
 
   <br/>
 
