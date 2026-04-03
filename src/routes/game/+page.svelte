@@ -95,7 +95,7 @@
 			wrongAnswerers = [];
 		} else {
 			// Wrong — chaos category deducts full points, regular questions half
-			const isChaos = gs.chaosEnabled && gs.chaosCategory.questions.some(q => q.id === activeQuestion!.id);
+			const isChaos = gs?.chaosEnabled && gs.chaosCategory.questions.some(q => q.id === activeQuestion!.id);
 			const deduction = isChaos ? activeQuestion.points : Math.floor(activeQuestion.points / 2);
 			if (deduction > 0) gameStore.deductPoints(currentAnswererId, deduction, activeQuestion.id);
 
@@ -480,12 +480,6 @@
 		color: #4ade80;
 	}
 
-	.round-of {
-		font-size: 0.7rem;
-		font-weight: 700;
-		color: #4a2d7a;
-	}
-
 	.turn-pill {
 		justify-self: center;
 		display: flex;
@@ -718,22 +712,10 @@
 		opacity: 0.4;
 	}
 
-	.chaos-tile-type {
-		font-size: 1.1rem;
-	}
-
 	.chaos-tile-pts {
 		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
 		color: #fca5a5;
-	}
-
-	.chaos-timer-badge {
-		position: absolute;
-		top: 4px;
-		right: 5px;
-		font-size: 0.65rem;
-		opacity: 0.7;
 	}
 
 	.chaos-tile-avatar {

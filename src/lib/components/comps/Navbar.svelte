@@ -118,7 +118,7 @@
 		background: linear-gradient(90deg, #1a0d2e 0%, #261040 100%);
 		border-bottom: 2px solid #5b21b6;
 		box-shadow: 0 2px 20px rgba(168, 85, 247, 0.25);
-		position: relative;
+		position: fixed;
 		z-index: 200;
 	}
 

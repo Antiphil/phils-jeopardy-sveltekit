@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users, savedGames, gameRatings, gameSessions } from '$lib/server/schema';
-import { eq, count, avg, sql } from 'drizzle-orm';
+import { eq, count, avg, sql, inArray } from 'drizzle-orm';
 
 export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth();
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async (event) => {
 	] = await Promise.all([
 		db.select({
 			total:  count(),
-			public: sql<number>`count(*) filter (where ${savedGames.isPublic} = true)`,
+			public: sql<number>`count(*) filter (where ${savedGames.publishType} IN ('public', 'official'))`,
 			round1: sql<number>`count(*) filter (where ${savedGames.boardCount} = 1)`,
 			round2: sql<number>`count(*) filter (where ${savedGames.boardCount} = 2)`,
 			round3: sql<number>`count(*) filter (where ${savedGames.boardCount} = 3)`,

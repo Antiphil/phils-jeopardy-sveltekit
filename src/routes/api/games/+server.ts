@@ -42,7 +42,7 @@ function toSavedGame(row: typeof savedGames.$inferSelect): SavedGame {
 		board3: (row.board3 as CategoryConfig[]) ?? [],
 		chaosCategory: row.chaosCategory as CategoryConfig,
 		chaosEnabled: row.chaosEnabled,
-		isPublic: row.isPublic,
+		publishType: (row.publishType as 'private' | 'public' | 'official') ?? 'private',
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
 	};

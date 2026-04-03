@@ -22,7 +22,7 @@ export const savedGames = pgTable('saved_games', {
 	board3: jsonb('board3'),
 	chaosCategory: jsonb('chaos_category').notNull(),
 	chaosEnabled: boolean('chaos_enabled').notNull().default(false),
-	isPublic: boolean('is_public').notNull().default(false),
+	publishType: text('publish_type').notNull().default('private'), // 'private' | 'public' | 'official'
 	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

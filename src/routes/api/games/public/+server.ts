@@ -2,14 +2,14 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { savedGames } from '$lib/server/schema';
-import { eq, desc } from 'drizzle-orm';
+import { inArray, desc } from 'drizzle-orm';
 import type { CategoryConfig, SavedGame } from '$lib/stores/savedGames';
 
 export const GET: RequestHandler = async () => {
 	const rows = await db
 		.select()
 		.from(savedGames)
-		.where(eq(savedGames.isPublic, true))
+		.where(inArray(savedGames.publishType, ['public', 'official']))
 		.orderBy(desc(savedGames.updatedAt));
 
 	return json(
@@ -24,7 +24,7 @@ export const GET: RequestHandler = async () => {
 			board3: (row.board3 as CategoryConfig[]) ?? [],
 			chaosCategory: row.chaosCategory as CategoryConfig,
 			chaosEnabled: row.chaosEnabled,
-			isPublic: row.isPublic,
+			publishType: row.publishType as 'private' | 'public' | 'official',
 			createdAt: row.createdAt.toISOString(),
 			updatedAt: row.updatedAt.toISOString(),
 		}))

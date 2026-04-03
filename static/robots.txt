@@ -3,7 +3,7 @@ Allow: /
 Allow: /how-to-play
 
 Disallow: /game
-Disallow: /game-config
+Disallow: /game-editor
 Disallow: /winner
 Disallow: /solutions
 Disallow: /auth/

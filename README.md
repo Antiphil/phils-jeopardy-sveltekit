@@ -202,7 +202,7 @@ src/
     │   ├── games/            # CRUD for saved games
     │   └── sessions/         # CRUD for game sessions
     ├── game/                 # Live game board
-    ├── game-config/          # Game editor (authenticated)
+    ├── game-editor/          # Game editor (authenticated)
     ├── how-to-play/          # Rules & mini-game guide
     ├── winner/               # Results & rating
     ├── sitemap.xml/          # Dynamic sitemap

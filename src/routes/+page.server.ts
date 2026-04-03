@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { gameSessions, savedGames, gameRatings } from '$lib/server/schema';
-import { eq, desc, avg, count } from 'drizzle-orm';
+import { inArray, desc, avg, count, eq } from 'drizzle-orm';
 import type { GameState } from '$lib/stores/game';
 import type { CategoryConfig, SavedGame } from '$lib/stores/savedGames';
 
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async (event) => {
 	const publicRows = await db
 		.select()
 		.from(savedGames)
-		.where(eq(savedGames.isPublic, true))
+		.where(inArray(savedGames.publishType, ['public', 'official']))
 		.orderBy(desc(savedGames.updatedAt));
 
 	const ratingRows = await db
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async (event) => {
 		board3: (row.board3 as CategoryConfig[]) ?? [],
 		chaosCategory: row.chaosCategory as CategoryConfig,
 		chaosEnabled: row.chaosEnabled,
-		isPublic: row.isPublic,
+		publishType: (row.publishType as 'private' | 'public' | 'official') ?? 'private',
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
 		avgRating: ratingMap[row.id]?.avg,

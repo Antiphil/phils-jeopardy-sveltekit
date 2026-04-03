@@ -36,8 +36,8 @@ export type SavedGame = {
 	board3: CategoryConfig[];
 	chaosCategory: CategoryConfig;
 	chaosEnabled: boolean;
-	isPublic: boolean;
-	avgRating?: number; // only present for public games
+	publishType: 'private' | 'public' | 'official'; // default 'private'
+	avgRating?: number; // only present for public/official games
 	ratingCount?: number;
 };
 
@@ -71,7 +71,7 @@ function makeChaos(): CategoryConfig {
 }
 
 function migrateGame(raw: unknown): SavedGame {
-	const game = raw as SavedGame & { philCategory?: CategoryConfig; language?: string };
+	const game = raw as SavedGame & { philCategory?: CategoryConfig; language?: string; isPublic?: boolean };
 	// Migrate legacy single language string → array
 	const languages = game.languages ?? (game.language ? [game.language] : undefined);
 	const chaos: CategoryConfig = game.chaosCategory ?? game.philCategory ?? makeChaos();
@@ -90,6 +90,13 @@ function migrateGame(raw: unknown): SavedGame {
 	const fixed = padded.map((q: QuestionConfig, i: number) =>
 		q.points === 0 ? { ...q, points: (i + 1) * 250 } : q
 	);
+	// Migrate legacy isPublic boolean → publishType
+	let publishType: 'private' | 'public' | 'official' = 'private';
+	if ('publishType' in game && game.publishType) {
+		publishType = game.publishType;
+	} else if (game.isPublic) {
+		publishType = 'public';
+	}
 	return {
 		...game,
 		languages,
@@ -102,7 +109,7 @@ function migrateGame(raw: unknown): SavedGame {
 			questions: fixed,
 		},
 		chaosEnabled: game.chaosEnabled ?? false,
-		isPublic: game.isPublic ?? false,
+		publishType,
 	};
 }
 
@@ -146,7 +153,7 @@ function createStore() {
 				board3: makeBoard(3),
 				chaosCategory: makeChaos(),
 				chaosEnabled: false,
-				isPublic: false,
+			publishType: 'private',
 			};
 			try {
 				const res = await fetch('/api/games', {
@@ -198,17 +205,39 @@ function createStore() {
 
 		async togglePublic(id: string, isPublic: boolean): Promise<void> {
 			try {
+				const publishType = isPublic ? 'public' : 'private';
 				const res = await fetch(`/api/games/${id}/publish`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ isPublic }),
+					body: JSON.stringify({ publishType }),
 				});
 				if (!res.ok) throw new Error();
-				update((games) => games.map((g) => (g.id === id ? { ...g, isPublic } : g)));
-				toast.success(isPublic ? 'Spiel veröffentlicht.' : 'Spiel auf privat gesetzt.');
+				update((games) => games.map((g) => (g.id === id ? { ...g, publishType } : g)));
+				toast.success(publishType === 'private' ? 'Spiel auf privat gesetzt.' : 'Spiel veröffentlicht.');
 			} catch {
 				toast.error('Sichtbarkeit konnte nicht geändert werden.');
 				throw new Error('togglePublic failed');
+			}
+		},
+
+		async setPublishType(id: string, publishType: 'private' | 'public' | 'official'): Promise<void> {
+			try {
+				const res = await fetch(`/api/games/${id}/publish`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ publishType }),
+				});
+				if (!res.ok) throw new Error();
+				update((games) => games.map((g) => (g.id === id ? { ...g, publishType } : g)));
+				const labels: Record<typeof publishType, string> = {
+					private: 'Spiel auf privat gesetzt.',
+					public: 'In Community-Library veröffentlicht.',
+					official: 'In offizielle Sammlung aufgenommen.',
+				};
+				toast.success(labels[publishType]);
+			} catch {
+				toast.error('Veröffentlichungstyp konnte nicht geändert werden.');
+				throw new Error('setPublishType failed');
 			}
 		},
 	};

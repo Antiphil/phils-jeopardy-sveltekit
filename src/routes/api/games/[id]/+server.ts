@@ -42,7 +42,7 @@ function toSavedGame(row: typeof savedGames.$inferSelect): SavedGame {
 		board3: (row.board3 as CategoryConfig[]) ?? [],
 		chaosCategory: row.chaosCategory as CategoryConfig,
 		chaosEnabled: row.chaosEnabled,
-		isPublic: row.isPublic,
+		publishType: (row.publishType as 'private' | 'public' | 'official') ?? 'private',
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
 	};
@@ -73,6 +73,7 @@ export const PUT: RequestHandler = async (event) => {
 				board3: body.board3 as unknown as typeof savedGames.$inferInsert['board3'],
 				chaosCategory: body.chaosCategory as unknown as typeof savedGames.$inferInsert['chaosCategory'],
 				chaosEnabled: body.chaosEnabled,
+				publishType: body.publishType ?? 'private',
 				updatedAt: new Date(body.updatedAt),
 			})
 			.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, userId)))

@@ -15,6 +15,8 @@
 	} = $props();
 
 	const filteredPublicGames = $derived(publicGames.filter((g) => !g.languages?.length || g.languages.includes($locale)));
+	const officialGames = $derived(filteredPublicGames.filter((g) => g.publishType === 'official'));
+	const communityGames = $derived(filteredPublicGames.filter((g) => g.publishType !== 'official'));
 	const publicIds = $derived(new Set(filteredPublicGames.map((g) => g.id)));
 	let games = $derived($savedGamesStore.filter((g) => !publicIds.has(g.id)));
 	let selectedId: string | null = $state(null);
@@ -89,15 +91,46 @@
 				</button>
 			{/if}
 
-			{#if filteredPublicGames.length > 0}
-				<div class="section-divider">{$t.gameSelect.officialGames}</div>
-				{#each filteredPublicGames as game (game.id)}
+			{#if officialGames.length > 0}
+				<div class="section-divider section-divider-official">⭐ Offizielle Spiele</div>
+				{#each officialGames as game (game.id)}
+					<button
+						class="game-card game-card-official"
+						class:selected={selectedId === game.id}
+						onclick={() => selectedId = game.id}
+					>
+						<div class="game-card-icon official-icon">⭐</div>
+						<div class="game-card-info">
+							<div class="game-card-name-row">
+								<span class="game-card-name official-name">{game.name}</span>
+								{#each game.languages ?? [] as lang}<span class="game-lang">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
+								{#if game.avgRating !== undefined}<span class="game-rating">⭐ {game.avgRating.toFixed(1)}</span>{/if}
+							</div>
+							<div class="game-card-cats">
+								{#each game.board1.slice(0, 4) as cat}
+									<span class="cat-pill official-pill">{cat.name}</span>
+								{/each}
+								{#if game.board1.length > 4}
+									<span class="cat-pill muted">+{game.board1.length - 4}</span>
+								{/if}
+							</div>
+						</div>
+						{#if selectedId === game.id}
+							<span class="check official-check">✓</span>
+						{/if}
+					</button>
+				{/each}
+			{/if}
+
+			{#if communityGames.length > 0}
+				<div class="section-divider section-divider-public">🌐 Community-Spiele</div>
+				{#each communityGames as game (game.id)}
 					<button
 						class="game-card game-card-public"
 						class:selected={selectedId === game.id}
 						onclick={() => selectedId = game.id}
 					>
-						<div class="game-card-icon">🏆</div>
+						<div class="game-card-icon public-icon">🌐</div>
 						<div class="game-card-info">
 							<div class="game-card-name-row">
 								<span class="game-card-name">{game.name}</span>
@@ -106,7 +139,7 @@
 							</div>
 							<div class="game-card-cats">
 								{#each game.board1.slice(0, 4) as cat}
-									<span class="cat-pill">{cat.name}</span>
+									<span class="cat-pill public-pill">{cat.name}</span>
 								{/each}
 								{#if game.board1.length > 4}
 									<span class="cat-pill muted">+{game.board1.length - 4}</span>
@@ -114,7 +147,7 @@
 							</div>
 						</div>
 						{#if selectedId === game.id}
-							<span class="check">✓</span>
+							<span class="check public-check">✓</span>
 						{/if}
 					</button>
 				{/each}
@@ -128,7 +161,7 @@
 				<div class="no-games">
 					{#if loggedIn}
 						{$t.gameSelect.noGamesLoggedIn}<br/>
-						<a href="/game-config">{$t.gameSelect.noGamesLoggedInLink}</a>
+						<a href="/game-editor">{$t.gameSelect.noGamesLoggedInLink}</a>
 					{:else}
 						{$t.gameSelect.noGamesLoggedOut}<br/>
 						<a href="/auth/signin">{$t.gameSelect.noGamesLoggedOutLink}</a>
@@ -413,21 +446,60 @@
 		padding: 0.4rem 0.2rem 0.1rem;
 	}
 
-	.game-card-public {
-		border-color: #854d0e40;
+	/* ── official (yellow) ── */
+	.section-divider-official { color: #ca8a04; }
+
+	.game-card-official {
+		border-color: #a1620740;
 		background: #1a1208;
 	}
 
-	.game-card-public:hover {
-		border-color: #a16207;
+	.game-card-official:hover {
+		border-color: #ca8a04;
 		background: #1e1609;
 	}
 
-	.game-card-public.selected {
+	.game-card-official.selected {
 		border-color: #fbbf24;
-		background: #1e1609;
+		background: #22190a;
 		box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
 	}
+
+	.official-icon { background: #1a1208; }
+	.official-name { color: #fcd34d; }
+	.official-pill {
+		background: rgba(251, 191, 36, 0.08);
+		border-color: #a1620750;
+		color: #ca8a04;
+	}
+	.official-check { color: #fbbf24; }
+
+	/* ── public (blue) ── */
+	.section-divider-public { color: #3b82f6; }
+
+	.game-card-public {
+		border-color: #1d4ed840;
+		background: #080e1f;
+	}
+
+	.game-card-public:hover {
+		border-color: #3b82f6;
+		background: #0d1830;
+	}
+
+	.game-card-public.selected {
+		border-color: #60a5fa;
+		background: #0f1e3a;
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+	}
+
+	.public-icon { background: #080e1f; }
+	.public-pill {
+		background: rgba(59, 130, 246, 0.08);
+		border-color: #1d4ed850;
+		color: #3b82f6;
+	}
+	.public-check { color: #60a5fa; }
 
 	.demo-divider { color: #0891b2; }
 

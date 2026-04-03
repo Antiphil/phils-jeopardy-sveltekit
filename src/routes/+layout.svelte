@@ -69,7 +69,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <Navbar />
-
+<div class="page-wrapper">
 <div class="bg-blobs" aria-hidden="true">
 	<div class="blob blob-1"></div>
 	<div class="blob blob-2"></div>
@@ -109,8 +109,12 @@
 		</svg>
 	</a>
 </footer>
-
+</div>
 <style>
+.page-wrapper {
+	height: calc(100vh - 70px);
+	padding-top: 70px;
+}
 	.bg-blobs {
 		position: fixed;
 		inset: 0;

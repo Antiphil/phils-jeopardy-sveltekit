@@ -9,13 +9,19 @@
 		ondelete: () => void;
 	} = $props();
 
-	let confirmStep: 0 | 1 | 2 = $state(0); // 0=idle, 1=confirm, 2=final (public)
+	const publishIcon: Record<string, string> = {
+		private: '🔒',
+		public: '🌐',
+		official: '⭐',
+	};
+
+	let confirmStep: 0 | 1 | 2 = $state(0); // 0=idle, 1=confirm, 2=final
 </script>
 
 <div
 	class="game-item"
 	class:active
-	class:is-public={game.isPublic}
+	data-publish={game.publishType ?? 'private'}
 	role="button"
 	tabindex="0"
 	onclick={onselect}
@@ -23,9 +29,9 @@
 >
 	<div class="game-item-info">
 		<div class="game-item-name-row">
+			<span class="publish-icon">{publishIcon[game.publishType ?? 'private']}</span>
 			<span class="game-item-name">{game.name}</span>
 			{#each game.languages ?? [] as lang}<span class="lang-badge">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>{/each}
-			{#if game.isPublic}<span class="public-badge">🌐</span>{/if}
 		</div>
 		<span class="game-item-date">{formatDate(game.updatedAt)}</span>
 	</div>
@@ -36,7 +42,7 @@
 			<button class="del-yes" onclick={ondelete}>Ja</button>
 			<button class="del-no" onclick={() => confirmStep = 0}>Nein</button>
 		</div>
-	{:else if confirmStep === 1 && game.isPublic}
+	{:else if confirmStep === 1 && (game.publishType === 'public' || game.publishType === 'official')}
 		<div class="delete-confirm" onclick={(e) => e.stopPropagation()} role="presentation">
 			<span class="del-label warn">Öffentlich!</span>
 			<button class="del-yes del-warn" onclick={() => confirmStep = 2}>Weiter</button>
@@ -71,11 +77,19 @@
 		transition: border-color 0.15s, background 0.15s;
 	}
 
+	/* ── private (default purple) ── */
 	.game-item:hover { border-color: #7c3aed; background: #261040; }
 	.game-item.active { border-color: #a855f7; background: #2d1260; }
-	.game-item.is-public { border-color: #a16207; background: #1a1208; }
-	.game-item.is-public:hover { border-color: #ca8a04; background: #1e1609; }
-	.game-item.is-public.active { border-color: #fbbf24; background: #22190a; }
+
+	/* ── public (blue) ── */
+	.game-item[data-publish="public"] { border-color: #1d4ed8; background: #080e1f; }
+	.game-item[data-publish="public"]:hover { border-color: #3b82f6; background: #0d1830; }
+	.game-item[data-publish="public"].active { border-color: #60a5fa; background: #0f1e3a; }
+
+	/* ── official (yellow/gold) ── */
+	.game-item[data-publish="official"] { border-color: #a16207; background: #1a1208; }
+	.game-item[data-publish="official"]:hover { border-color: #ca8a04; background: #1e1609; }
+	.game-item[data-publish="official"].active { border-color: #fbbf24; background: #22190a; }
 
 	.game-item-info {
 		display: flex;
@@ -92,6 +106,12 @@
 		min-width: 0;
 	}
 
+	.publish-icon {
+		font-size: 0.75rem;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+
 	.game-item-name {
 		font-family: 'Fredoka One', cursive;
 		font-size: 0.9rem;
@@ -102,7 +122,6 @@
 	}
 
 	.game-item-date { font-size: 0.7rem; color: #6b47a0; }
-	.public-badge { font-size: 0.75rem; flex-shrink: 0; }
 	.lang-badge { font-size: 0.8rem; flex-shrink: 0; }
 
 	.game-item-del {

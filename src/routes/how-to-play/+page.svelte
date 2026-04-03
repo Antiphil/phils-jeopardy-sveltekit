@@ -71,7 +71,7 @@
 						<span class="gd-icon">📝</span>
 						<div>
 							<div class="gd-title">Spiel erstellen oder wählen</div>
-							<div class="gd-desc">Er kann ein eigenes Spiel in der Game-Config erstellen, oder ein öffentliches Spiel aus der Bibliothek nehmen</div>
+							<div class="gd-desc">Er kann ein eigenes Spiel im Game Editor erstellen, oder ein öffentliches Spiel aus der Bibliothek nehmen</div>
 						</div>
 					</div>
 					<div class="gm-duty">

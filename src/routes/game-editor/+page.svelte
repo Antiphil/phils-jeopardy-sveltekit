@@ -42,14 +42,19 @@ import { DEMO_GAME } from '$lib/demoGame';
 
 	type Tab = 'board1' | 'board2' | 'board3' | 'chaos';
 
-	let games = $derived([...$savedGamesStore].sort((a, b) => Number(b.isPublic) - Number(a.isPublic)));
+	let games = $derived([...$savedGamesStore].sort((a, b) => {
+		const priority: Record<string, number> = { official: 0, public: 1, private: 2 };
+		return (priority[a.publishType] ?? 2) - (priority[b.publishType] ?? 2);
+	}));
 	let editing: SavedGame | null = $state(null);
 	let viewingDemo = $state(false);
 	let activeTab: Tab = $state('board1');
 	let editingLang: string = $state('');
+	let publishType: 'private' | 'public' | 'official' = $state('private');
 	let saving  = $state(false);
 	let creating = $state(false);
 	let nameError = $state(false);
+	let optionsOpen = $state(false);
 
 	// Keep editingLang in sync when languages change
 	$effect(() => {
@@ -58,10 +63,18 @@ import { DEMO_GAME } from '$lib/demoGame';
 		if (!langs.length) editingLang = '';
 	});
 
+	// Sync publishType with editing
+	$effect(() => {
+		if (editing) {
+			publishType = editing.publishType;
+		}
+	});
+
 	let readiness = $derived(editing ? checkReady(editing) : { ready: false, missing: 0 });
 
 	function selectGame(game: SavedGame) {
 		editing = structuredClone(game);
+		publishType = game.publishType;
 		viewingDemo = false;
 		activeTab = 'board1';
 	}
@@ -97,8 +110,11 @@ import { DEMO_GAME } from '$lib/demoGame';
 		nameError = false;
 		saving = true;
 		try {
+			// Sync publishType to editing before saving
+			editing.publishType = publishType;
 			const result = await savedGamesStore.save(editing);
 			editing = structuredClone(result);
+			publishType = result.publishType;
 		} catch {
 			// toast already shown by store
 		} finally {
@@ -225,10 +241,15 @@ import { DEMO_GAME } from '$lib/demoGame';
 						bind:value={editing.name}
 						oninput={() => { if (nameError && editing?.name.trim()) nameError = false; }}
 					/>
+					<button class="btn-options-toggle" class:open={optionsOpen} onclick={() => optionsOpen = !optionsOpen} title="Optionen ein-/ausblenden">
+						⚙️ <span class="options-toggle-label">Optionen</span>
+						<span class="options-chevron" class:open={optionsOpen}>▾</span>
+					</button>
 					<button class="btn-save" class:saving onclick={saveGame} disabled={saving}>
 						{saving ? '…' : '💾 Speichern'}
 					</button>
 				</div>
+				{#if optionsOpen}
 				<div class="options-grid">
 					<div class="opt-row">
 						<span class="opt-label">Sprachen</span>
@@ -337,41 +358,85 @@ import { DEMO_GAME } from '$lib/demoGame';
 						</div>
 					</div>
 
-					{#if data.isAdmin}
-						<div class="opt-row">
+					<div class="opt-row">
+						<div class="opt-label-section">
 							<div class="opt-label-with-hint">
-								<span class="opt-label">Sichtbarkeit</span>
+								<span class="opt-label">Veröffentlichung</span>
 								<div class="hint-wrap">
 									<span class="hint-icon">?</span>
 									<div class="hint-tooltip">
-										Öffentliche Spiele erscheinen für alle Spieler in der Spielauswahl. Nur vollständig ausgefüllte Spiele können veröffentlicht werden.
+										Wähle wie dein Spiel veröffentlicht werden soll. Nur vollständig ausgefüllte Spiele können veröffentlicht werden.
 									</div>
 								</div>
 							</div>
-							<div class="opt-publish-row">
-								<button
-									class="opt-toggle"
-									class:active={editing.isPublic}
-									class:published={editing.isPublic}
-									disabled={!readiness.ready && !editing.isPublic}
-									onclick={() => {
-										if (!editing || (!readiness.ready && !editing.isPublic)) return;
-										const next = !editing.isPublic;
-										savedGamesStore.togglePublic(editing.id, next);
-										editing = { ...editing, isPublic: next };
-									}}
-								>
-									<span class="opt-toggle-dot" class:on={editing.isPublic} class:green={editing.isPublic}></span>
-									{editing.isPublic ? '🌐 Öffentlich' : '🔒 Privat'}
-								</button>
+							<div class="ready-badge-wrap">
 								<div class="ready-badge" class:ready={readiness.ready}>
 									<span class="ready-dot"></span>
-									{readiness.ready ? 'Bereit zur Veröffentlichung' : `${readiness.missing} Frage${readiness.missing === 1 ? '' : 'n'} fehlen noch`}
+									{readiness.ready ? 'Bereit' : `${readiness.missing} fehlen`}
 								</div>
+								{#if !readiness.ready}
+									<div class="ready-badge-hint">Fragen & Aufgaben müssen vollständig ausgefüllt sein, um das Spiel veröffentlichen zu können.</div>
+								{/if}
 							</div>
 						</div>
-					{/if}
+
+						<div class="publish-buttons">
+							<!-- Option 1: Privat -->
+							<label class="publish-btn publish-private">
+								<input 
+								type="radio" 
+								name="publish-type" 
+								value="private" 
+								bind:group={publishType}
+								onchange={() => { if (editing) editing.publishType = publishType; }}
+							/>
+								<div class="radio-custom"></div>
+								<div class="btn-content">
+									<span class="btn-label">🔒 Privates Spiel</span>
+									<span class="btn-desc">Das Spiel kann nur von dir gehostet werden.</span>
+								</div>
+							</label>
+
+							<!-- Option 2: Veröffentlicht -->
+							<label class="publish-btn publish-public" class:disabled={!readiness.ready}>
+								<input 
+								type="radio" 
+								name="publish-type" 
+								value="public" 
+								bind:group={publishType}
+								disabled={!readiness.ready}
+								onchange={() => { if (editing && readiness.ready) editing.publishType = publishType; }}
+							/>
+								<div class="radio-custom"></div>
+								<div class="btn-content">
+									<span class="btn-label">🌐 Öffentliches Spiel</span>
+									<span class="btn-desc">Dein Spiel wird öffentlich für alle zur Vefügung gestellt. Es kann von anderen Spielern gespielt und bewertet werden.</span>
+								</div>
+							</label>
+
+							<!-- Option 3: Offiziell (nur Admin sichtbar) -->
+							{#if data.isAdmin}
+								<label class="publish-btn publish-official" class:disabled={!readiness.ready}>
+									<input 
+									type="radio" 
+									name="publish-type" 
+									value="official" 
+									bind:group={publishType}
+									disabled={!readiness.ready}
+									onchange={() => { if (editing && readiness.ready) editing.publishType = publishType; }}
+								/>
+									<div class="radio-custom"></div>
+									<div class="btn-content">
+										<span class="btn-label">⭐ Offizielles Spiel</span>
+										<span class="btn-desc">Das Spiel wird als Offizielles Spiel veröffentlicht.</span>
+									</div>
+								</label>
+							{/if}
+						</div>
+
+					</div>
 				</div>
+				{/if}
 			</div>
 
 			{@const langs = editing.languages ?? []}
@@ -455,8 +520,6 @@ import { DEMO_GAME } from '$lib/demoGame';
 <style>
 	.admin-layout {
 		display: flex;
-		height: calc(100vh - 70px);
-		overflow: hidden;
 		position: relative;
 		z-index: 1;
 	}
@@ -470,6 +533,8 @@ import { DEMO_GAME } from '$lib/demoGame';
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+		position: fixed;
+  		height: 100%;
 	}
 
 	.sidebar-header {
@@ -567,6 +632,7 @@ import { DEMO_GAME } from '$lib/demoGame';
 		flex-direction: column;
 		overflow: hidden;
 		background: #12082a;
+		padding-left: 260px;
 	}
 
 	.empty-state {
@@ -618,6 +684,45 @@ import { DEMO_GAME } from '$lib/demoGame';
 		gap: 0.75rem;
 	}
 
+	.btn-options-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		background: #1e0d38;
+		border: 1.5px solid #3d1a6e;
+		color: #7c5faa;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.82rem;
+		padding: 0.35rem 0.75rem;
+		border-radius: 999px;
+		cursor: pointer;
+		white-space: nowrap;
+		flex-shrink: 0;
+		transition: border-color 0.15s, color 0.15s, background 0.15s;
+	}
+
+	.btn-options-toggle:hover {
+		border-color: #7c3aed;
+		color: #c084fc;
+		background: #261040;
+	}
+
+	.btn-options-toggle.open {
+		border-color: #a855f7;
+		color: #c084fc;
+		background: #2d1260;
+	}
+
+	.options-toggle-label { display: inline; }
+
+	.options-chevron {
+		display: inline-block;
+		transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+		font-size: 0.75rem;
+	}
+
+	.options-chevron.open { transform: rotate(180deg); }
+
 	.options-grid {
 		display: flex;
 		flex-direction: column;
@@ -630,8 +735,8 @@ import { DEMO_GAME } from '$lib/demoGame';
 
 	.opt-row {
 		display: grid;
-		grid-template-columns: 130px 1fr;
-		align-items: center;
+		grid-template-columns: 180px 1fr;
+		align-items: flex-start;
 		gap: 0.75rem;
 		padding: 0.55rem 0.85rem;
 		border-bottom: 1px solid #1e0d38;
@@ -700,11 +805,168 @@ import { DEMO_GAME } from '$lib/demoGame';
 		pointer-events: none;
 	}
 
-	.opt-publish-row {
+	.publish-buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.5rem;
+	}
+
+	.publish-btn {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		flex-wrap: wrap;
+		gap: 0.4rem;
+		padding: 0.4rem 0.65rem;
+		border: 1.5px solid #2a1050;
+		border-radius: 0.6rem;
+		background: #1a0a30;
+		cursor: pointer;
+		font-family: 'Fredoka One', cursive;
+		font-size: 0.8rem;
+		transition: all 0.15s;
+		width: 100%;
+	}
+
+	.publish-btn.disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+		pointer-events: none;
+	}
+
+	.publish-btn input[type="radio"] {
+		display: none;
+	}
+
+	.radio-custom {
+		width: 16px;
+		height: 16px;
+		border: 2px solid #5b21b6;
+		border-radius: 50%;
+		background: transparent;
+		flex-shrink: 0;
+		transition: all 0.2s;
+		position: relative;
+	}
+
+	.radio-custom::after {
+		content: '';
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		background: #a855f7;
+		border-radius: 50%;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+
+	.btn-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #6b47a0;
+	}
+
+	.btn-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.btn-desc {
+		font-family: 'Nunito', sans-serif;
+		font-size: 0.7rem;
+		color: #7c6aa3;
+		font-size: 0.68rem;
+  font-weight: 700;
+	}
+
+	/* ─── Private Button ────────────────────────────────────── */
+	.publish-btn.publish-private {
+		border-color: #5b21b6;
+	}
+
+	.publish-btn.publish-private:hover {
+		border-color: #7c3aed;
+		background: #1a0a3050;
+	}
+
+	.publish-btn.publish-private input:checked ~ .radio-custom {
+		border-color: #7c3aed;
+		background: #3d1a6e;
+		box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+	}
+
+	.publish-btn.publish-private input:checked ~ .radio-custom::after {
+		opacity: 1;
+		background: #a855f7;
+	}
+
+	.publish-btn.publish-private:has(input:checked) .btn-label {
+		color: #d8b4fe;
+	}
+
+	.publish-btn.publish-private:has(input:checked) .btn-desc {
+		color: #b8a0d4;
+	}
+
+	/* ─── Public Button ────────────────────────────────────── */
+	.publish-btn.publish-public {
+		border-color: #1d4ed8;
+	}
+
+	.publish-btn.publish-public:hover {
+		border-color: #3b82f6;
+		background: #080e1f50;
+	}
+
+	.publish-btn.publish-public input:checked ~ .radio-custom {
+		border-color: #3b82f6;
+		background: #0f1e3a;
+		box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+	}
+
+	.publish-btn.publish-public input:checked ~ .radio-custom::after {
+		opacity: 1;
+		background: #60a5fa;
+	}
+
+	.publish-btn.publish-public:has(input:checked) .btn-label {
+		color: #93c5fd;
+	}
+
+	.publish-btn.publish-public:has(input:checked) .btn-desc {
+		color: #60a5fa;
+	}
+
+	/* ─── Official Button (Admin-only) ────────────────────── */
+	.publish-btn.publish-official {
+		border-color: #fbbf2440;
+	}
+
+	.publish-btn.publish-official:hover {
+		border-color: #fbbf24;
+		background: #451a0330;
+	}
+
+	.publish-btn.publish-official input:checked ~ .radio-custom {
+		border-color: #fbbf24;
+		background: #713f12;
+		box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+	}
+
+	.publish-btn.publish-official input:checked ~ .radio-custom::after {
+		opacity: 1;
+		background: #fbbf24;
+	}
+
+	.publish-btn.publish-official:has(input:checked) .btn-label {
+		color: #fcd34d;
+	}
+
+	.publish-btn.publish-official:has(input:checked) .btn-desc {
+		color: #f59e0b;
 	}
 
 	.opt-toggle {
@@ -725,8 +987,6 @@ import { DEMO_GAME } from '$lib/demoGame';
 
 	.opt-toggle:hover:not(:disabled) { border-color: #5b21b6; color: #c084fc; }
 	.opt-toggle.active { background: #2a0d4e; color: #d8b4fe; border-color: #7c3aed; }
-	.opt-toggle.published { background: #052e16; color: #4ade80; border-color: #16a34a; }
-	.opt-toggle.published:hover { background: #1c0505; color: #f87171; border-color: #b91c1c; }
 	.opt-toggle:disabled { opacity: 0.35; cursor: not-allowed; }
 
 	.opt-toggle-dot {
@@ -739,33 +999,62 @@ import { DEMO_GAME } from '$lib/demoGame';
 	}
 
 	.opt-toggle-dot.on { background: #a855f7; box-shadow: 0 0 6px #a855f799; }
-	.opt-toggle-dot.on.green { background: #4ade80; box-shadow: 0 0 6px #4ade8099; }
+
+	.opt-label-section {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.55rem;
+		flex-direction: column;
+	}
+
+	.ready-badge-wrap {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		align-items: flex-start;
+		width: 100%;
+		justify-content: center;
+	}
 
 	.ready-badge {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		gap: 0.3rem;
-		font-size: 0.7rem;
+		gap: 0.25rem;
+		font-size: 0.65rem;
 		font-weight: 700;
-		color: #f87171;
+		color: #ef4444;
 		background: #1c050530;
-		border: 1px solid #b91c1c40;
-		border-radius: 999px;
-		padding: 0.2rem 0.6rem;
+		border: 1px solid #dc262680;
+		border-radius: 0.35rem;
+		padding: 0.2rem 0.5rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		width: 100%;
+		justify-content: center;
 	}
 
 	.ready-badge.ready {
 		color: #4ade80;
 		background: #05301530;
-		border-color: #16a34a40;
+		border-color: #22c55e80;
+		width: 100%;
+		justify-content: center;
+	}
+
+	.ready-badge-hint {
+		font-size: 0.6rem;
+		color: #ef4444;
+		font-weight: 600;
+		line-height: 1.35;
+		max-width: 160px;
 	}
 
 	.ready-dot {
-		width: 6px;
-		height: 6px;
+		width: 5px;
+		height: 5px;
 		border-radius: 50%;
 		flex-shrink: 0;
-		background: #f87171;
+		background: #ef4444;
 	}
 
 	.ready-badge.ready .ready-dot { background: #4ade80; box-shadow: 0 0 5px #4ade8099; }
@@ -930,7 +1219,10 @@ import { DEMO_GAME } from '$lib/demoGame';
 	.timer-seconds-input:focus { border-color: #ef4444; }
 	.timer-seconds-input::-webkit-outer-spin-button,
 	.timer-seconds-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-	.timer-seconds-input[type=number] { -moz-appearance: textfield; }
+	.timer-seconds-input[type=number] {
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
 
 	.timer-seconds-unit {
 		font-size: 0.72rem;

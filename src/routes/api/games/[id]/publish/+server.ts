@@ -15,22 +15,29 @@ export const POST: RequestHandler = async (event) => {
 	} catch {
 		throw error(500, 'Benutzer konnte nicht überprüft werden');
 	}
-	if (!isAdmin) throw error(403, 'Kein Admin');
 
-	let isPublic: boolean;
+	let publishType: 'private' | 'public' | 'official';
 	try {
-		({ isPublic } = await event.request.json());
+		({ publishType } = await event.request.json());
+		if (!['private', 'public', 'official'].includes(publishType)) {
+			throw error(400, 'Ungültiger Veröffentlichungstyp');
+		}
 	} catch {
 		throw error(400, 'Ungültige Anfrage');
+	}
+
+	// Only admins can publish as 'official'
+	if (publishType === 'official' && !isAdmin) {
+		throw error(403, 'Nur Admins können Spiele als offiziell veröffentlichen');
 	}
 
 	try {
 		await db
 			.update(savedGames)
-			.set({ isPublic })
+			.set({ publishType })
 			.where(and(eq(savedGames.id, event.params.id), eq(savedGames.userId, session.user.id)));
 		return new Response(null, { status: 204 });
 	} catch {
-		throw error(500, 'Sichtbarkeit konnte nicht geändert werden');
+		throw error(500, 'Veröffentlichungstyp konnte nicht geändert werden');
 	}
 };

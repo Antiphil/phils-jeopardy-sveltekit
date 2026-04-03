@@ -60,14 +60,14 @@ export const PATCHNOTES: PatchNote[] = [
 			{ type: 'change', text: 'Chaos Category: neues Design als breite Sektion unter dem Board' },
 			{ type: 'change', text: 'Gameboard: Rework der Topbar mit Rundenanzeige, Aktivem Spieler und Gamemaster Buttons' },
 			{ type: 'fix', text: 'Timer resettet sich nicht mehr beim Tippen im Wordle' },
-			{ type: 'fix', text: 'Board 3 Inhalt wird wieder korrekt in der Game-Config angezeigt' },
+			{ type: 'fix', text: 'Board 3 Inhalt wird wieder korrekt im Game Editor angezeigt' },
 		],
 	},
 	{
 		version: '0.4.3',
 		date: '01.04.2026',
 		changes: [
-			{ type: 'new', text: 'Validierungs Indikatoren für Publizierung in der Game-Config.' },
+			{ type: 'new', text: 'Validierungs Indikatoren für Publizierung im Game Editor.' },
 			{ type: 'new', text: 'Demo-Spiel vorerst spielbar.' },
 			{ type: 'fix', text: 'Lösungsseite auf 1–3 Runden angepasst' },
 			{ type: 'fix', text: 'Board 3 wird nach Speichern korrekt geladen' },
@@ -80,7 +80,7 @@ export const PATCHNOTES: PatchNote[] = [
 		changes: [
 			{ type: 'new', text: 'Hardgecodetes Demo-Spiel mit 3 Boards, Chaos Category (DE+EN)' },
 			{ type: 'new', text: 'Demo-Spiel in der Sidebar als Read-Only Vorschau' },
-			{ type: 'change', text: 'Alle Fragen in der Game-Config standardmäßig zugeklappt' },
+			{ type: 'change', text: 'Alle Fragen im Game Editor standardmäßig zugeklappt' },
 		],
 	},
 ];

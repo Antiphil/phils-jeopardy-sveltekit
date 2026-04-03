@@ -218,7 +218,7 @@ function createGameStore() {
 			updateState((state) => ({ ...state, currentTurnIndex: index }));
 		},
 
-		switchBoard(board: 1 | 2) {
+		switchBoard(board: 1 | 2 | 3) {
 			updateState((state) => ({ ...state, currentBoard: board }));
 		},
 

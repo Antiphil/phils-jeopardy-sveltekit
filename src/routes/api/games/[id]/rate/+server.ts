@@ -27,12 +27,14 @@ export const POST: RequestHandler = async (event) => {
 
 	try {
 		const [game] = await db
-			.select({ isPublic: savedGames.isPublic })
+			.select({ publishType: savedGames.publishType })
 			.from(savedGames)
 			.where(eq(savedGames.id, event.params.id))
 			.limit(1);
 
-		if (!game?.isPublic) throw error(403, 'Spiel ist nicht öffentlich');
+		if (!game?.publishType || !['public', 'official'].includes(game.publishType)) {
+			throw error(403, 'Spiel ist nicht öffentlich');
+		}
 
 		await db.insert(gameRatings).values({
 			id: crypto.randomUUID(),
