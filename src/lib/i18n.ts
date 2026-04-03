@@ -162,6 +162,11 @@ const translations = {
 			terms: 'Nutzungsbedingungen',
 			privacy: 'Datenschutzerklärung',
 		},
+		toast: {
+			success: 'Erfolg',
+			error: 'Fehler',
+			info: 'Info',
+		},
 		solutions: {
 			title: '🗝️ Lösungsübersicht',
 			subtitle: 'Nur für den Gamemaster',
@@ -411,6 +416,11 @@ const translations = {
 			privacyNoteAnd: 'and',
 			terms: 'Terms of Service',
 			privacy: 'Privacy Policy',
+		},
+		toast: {
+			success: 'Success',
+			error: 'Error',
+			info: 'Info',
 		},
 		solutions: {
 			title: '🗝️ Solutions',

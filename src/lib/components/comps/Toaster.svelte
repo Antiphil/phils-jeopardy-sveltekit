@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
+	import { t } from '$lib/i18n';
 
 	const icons = { success: '✓', error: '✕', info: 'ℹ' };
 </script>
 
+
 <div class="toaster">
-	{#each $toast as t (t.id)}
-		<button class="toast toast-{t.type}" onclick={() => toast.remove(t.id)} aria-label="Schließen">
+	{#each $toast as item (item.id)}
+		<button class="toast toast-{item.type}" onclick={() => toast.remove(item.id)} aria-label="Schließen">
 			<div class="toast-body">
-				<span class="toast-icon">{icons[t.type]}</span>
-				<span class="toast-msg">{t.message}</span>
+				<span class="toast-icon">{icons[item.type]}</span>
+				<div class="toast-text-wrapper">
+					<span class="toast-title">{$t.toast[item.type]}</span>
+					<span class="toast-msg">{item.message}</span>
+				</div>
 			</div>
 			<div class="toast-timer"></div>
 		</button>
@@ -59,6 +64,11 @@
 		gap: 0.65rem;
 		padding: 0.65rem 0.9rem;
 	}
+	.toast-text-wrapper {
+		display: flex;
+		flex-direction: column;
+	}
+
 
 	/* ── Success ── */
 	.toast-success {
@@ -73,7 +83,8 @@
 		border: 1px solid rgba(52, 211, 153, 0.3);
 	}
 
-	.toast-success .toast-msg { color: #a7f3d0; }
+	.toast-success .toast-title { color: #34d399; }
+	.toast-success .toast-msg   { color: #a7f3d0; }
 
 	.toast-success .toast-timer {
 		background: linear-gradient(90deg, #34d399, #6ee7b7);
@@ -93,7 +104,8 @@
 		border: 1px solid rgba(248, 113, 113, 0.3);
 	}
 
-	.toast-error .toast-msg { color: #fecaca; }
+	.toast-error .toast-title { color: #f87171; }
+	.toast-error .toast-msg   { color: #fecaca; }
 
 	.toast-error .toast-timer {
 		background: linear-gradient(90deg, #f87171, #fca5a5);
@@ -113,7 +125,8 @@
 		border: 1px solid rgba(168, 85, 247, 0.3);
 	}
 
-	.toast-info .toast-msg { color: #e9d5ff; }
+	.toast-info .toast-title { color: #c084fc; }
+	.toast-info .toast-msg   { color: #e9d5ff; }
 
 	.toast-info .toast-timer {
 		background: linear-gradient(90deg, #a855f7, #d946ef);
@@ -131,6 +144,13 @@
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
+	}
+	.toast-title {
+		font-family: 'Nunito', sans-serif;
+		font-size: 1rem;
+		font-weight: 700;
+		line-height: 1.35;
+		flex: 1;
 	}
 
 	.toast-msg {

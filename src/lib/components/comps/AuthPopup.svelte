@@ -35,7 +35,6 @@
 				{/if}
 				<div class="user-info">
 					<div class="user-name">{user.name ?? 'Unbekannt'}</div>
-					<div class="user-email">{user.email ?? ''}</div>
 				</div>
 			</div>
 
@@ -288,14 +287,6 @@
 		font-family: 'Fredoka One', cursive;
 		font-size: 1rem;
 		color: #e2d0ff;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.user-email {
-		font-size: 0.72rem;
-		color: #7c5faa;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
