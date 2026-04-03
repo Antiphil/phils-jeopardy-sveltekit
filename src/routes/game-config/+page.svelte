@@ -419,7 +419,7 @@ import { DEMO_GAME } from '$lib/demoGame';
 			<div class="categories-scroll">
 				{#if activeTab === 'chaos'}
 					<div class="categories-grid single">
-						<CategoryEditor bind:category={e.chaosCategory} isPhil={true} {editingLang} {langs} />
+						<CategoryEditor bind:category={e.chaosCategory} isPhil={true} {editingLang} {langs} isAdmin={data.isAdmin} />
 					</div>
 				{:else if activeTab === 'board3'}
 					<div class="categories-grid">

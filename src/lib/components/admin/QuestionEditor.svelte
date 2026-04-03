@@ -2,11 +2,12 @@
 	import type { QuestionConfig } from '$lib/stores/savedGames';
 	import { t } from '$lib/i18n';
 
-	let { question = $bindable(), editingLang = '', langs = [], showTimer = false }: {
+	let { question = $bindable(), editingLang = '', langs = [], showTimer = false, isAdmin = false }: {
 		question: QuestionConfig;
 		editingLang?: string;
 		langs?: string[];
 		showTimer?: boolean;
+		isAdmin?: boolean;
 	} = $props();
 
 	const MAX_GUESSES = 6;
@@ -77,14 +78,18 @@
 						class="field-input type-select"
 						value={chaosType}
 						onchange={(e) => {
-							question = { ...question, chaosType: (e.target as HTMLSelectElement).value as 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff' };
+							const val = (e.target as HTMLSelectElement).value as 'question' | 'wordle' | 'hangman' | 'wheel' | 'spotdiff';
+							if (val === 'spotdiff' && !isAdmin) return;
+							question = { ...question, chaosType: val };
 						}}
 					>
 						<option value="question">❓ Frage / Aufgabe</option>
 						<option value="wordle">🟩 Wordle</option>
 						<option value="hangman">🪢 Hangman</option>
 						<option value="wheel">🎡 Chaos Wheel</option>
-							<option value="spotdiff">🔍 Finde den Fehler</option>
+							<option value="spotdiff" disabled={!isAdmin} class:coming-soon={!isAdmin}>
+								🔍 Finde den Fehler{isAdmin ? '' : ' (Coming Soon)'}
+							</option>
 					</select>
 				</div>
 			{/if}
@@ -375,6 +380,11 @@
 		font-size: 0.78rem;
 		color: #7f1d1d;
 		font-weight: 700;
+	}
+
+	option.coming-soon {
+		color: #4a2d7a;
+		font-style: italic;
 	}
 
 	.type-select {

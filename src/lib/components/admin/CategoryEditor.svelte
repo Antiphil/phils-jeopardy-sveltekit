@@ -2,11 +2,12 @@
 	import type { CategoryConfig } from '$lib/stores/savedGames';
 	import QuestionEditor from './QuestionEditor.svelte';
 
-	let { category = $bindable(), isPhil = false, editingLang = '', langs = [] }: {
+	let { category = $bindable(), isPhil = false, editingLang = '', langs = [], isAdmin = false }: {
 		category: CategoryConfig;
 		isPhil?: boolean;
 		editingLang?: string;
 		langs?: string[];
+		isAdmin?: boolean;
 	} = $props();
 
 	const showTimer = $derived(isPhil);
@@ -60,7 +61,7 @@
 
 	<div class="questions-list">
 		{#each category.questions as _, i}
-			<QuestionEditor bind:question={category.questions[i]} {editingLang} {langs} {showTimer} />
+			<QuestionEditor bind:question={category.questions[i]} {editingLang} {langs} {showTimer} {isAdmin} />
 		{/each}
 	</div>
 </div>
