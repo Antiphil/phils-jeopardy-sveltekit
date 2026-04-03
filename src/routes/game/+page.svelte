@@ -302,7 +302,6 @@
 						>{n}</span>
 					{/each}
 				</span>
-				<span class="round-of">von {gs.boardCount}</span>
 			</div>
 
 			<!-- Current turn -->
