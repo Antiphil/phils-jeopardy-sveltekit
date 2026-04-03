@@ -771,20 +771,20 @@
 	.resume-cards {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 1rem;
+		gap: 0.5rem;
 		justify-content: center;
 		width: 100%;
-		margin-bottom: 2rem;
+		margin-bottom: 1rem;
 	}
 
 	.resume-card {
 		background: #1e0d38;
 		border: 2px solid #a855f7;
-		border-radius: 1.5rem;
-		padding: 1.25rem 1.5rem;
+		border-radius: 1rem;
+		padding: 0.65rem 1rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0.35rem;
 		max-width: 420px;
 		width: 100%;
 		box-shadow: 0 0 32px rgba(168, 85, 247, 0.2);
@@ -809,12 +809,12 @@
 	}
 
 	.resume-icon {
-		font-size: 1.2rem;
+		font-size: 1rem;
 	}
 
 	.resume-title {
 		font-family: 'Fredoka One', cursive;
-		font-size: 1.1rem;
+		font-size: 0.9rem;
 		color: #c084fc;
 	}
 
@@ -827,25 +827,25 @@
 
 	.resume-players {
 		font-family: 'Fredoka One', cursive;
-		font-size: 0.95rem;
+		font-size: 0.85rem;
 		color: #e2d0ff;
 	}
 
 	.resume-progress {
-		font-size: 0.8rem;
+		font-size: 0.72rem;
 		color: #7c5faa;
 		font-weight: 600;
 	}
 
 	.resume-leader {
-		font-size: 0.8rem;
+		font-size: 0.72rem;
 		color: #fbbf24;
 		font-weight: 700;
 	}
 
 	.resume-actions {
 		display: flex;
-		gap: 0.75rem;
+		gap: 0.5rem;
 	}
 
 	.btn-resume {
@@ -853,8 +853,8 @@
 		background: linear-gradient(135deg, #a855f7, #d946ef);
 		color: white;
 		font-family: 'Fredoka One', cursive;
-		font-size: 1rem;
-		padding: 0.55rem 1rem;
+		font-size: 0.85rem;
+		padding: 0.4rem 0.75rem;
 		border-radius: 999px;
 		border: none;
 		cursor: pointer;
@@ -875,8 +875,8 @@
 		color: #6b47a0;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
-		font-size: 0.85rem;
-		padding: 0.5rem 1rem;
+		font-size: 0.78rem;
+		padding: 0.35rem 0.75rem;
 		border-radius: 999px;
 		cursor: pointer;
 		transition:
